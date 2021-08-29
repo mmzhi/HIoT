@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 
@@ -77,6 +78,30 @@ func showHelp() {
 
 func ConfigureConfig(args []string) (*Config, error) {
 	config := &Config{}
+
+	tmpConfig, e := LoadConfig()
+	if e != nil {
+		return nil, e
+	} else {
+		config = tmpConfig
+	}
+
+	if config.Debug {
+		log = logger.Debug().Named("broker")
+	}
+
+	if err := config.check(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+
+}
+
+func LoadFlag(args []string) (*Config, error) {
+
+	config := &Config{}
+
 	var (
 		help       bool
 		configFile string
@@ -124,40 +149,24 @@ func ConfigureConfig(args []string) (*Config, error) {
 		}
 	})
 
-	if configFile != "" {
-		tmpConfig, e := LoadConfig(configFile)
-		if e != nil {
-			return nil, e
-		} else {
-			config = tmpConfig
-		}
-	}
-
-	if config.Debug {
-		log = logger.Debug().Named("broker")
-	}
-
-	if err := config.check(); err != nil {
-		return nil, err
-	}
-
 	return config, nil
-
 }
 
-func LoadConfig(filename string) (*Config, error) {
+func LoadConfig(filenames ...string) (*Config, error) {
 
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		// log.Error("Read config file error: ", zap.Error(err))
+	if len(filenames) > 0 {
+
+	}
+
+	config := Config{}
+
+	viper.SetConfigName("hiot")
+
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
-	// log.Info(string(content))
 
-	var config Config
-	err = json.Unmarshal(content, &config)
-	if err != nil {
-		// log.Error("Unmarshal config file error: ", zap.Error(err))
+	if err := viper.Unmarshal(&config); err != nil {
 		return nil, err
 	}
 
@@ -165,16 +174,16 @@ func LoadConfig(filename string) (*Config, error) {
 }
 
 
-func (p *Plugins) UnmarshalJSON(b []byte) error {
-	var named NamedPlugins
-	err := json.Unmarshal(b, &named)
-	if err != nil {
-		return err
-	}
-	p.Auth = auth.NewAuth(named.Auth)
-	p.Bridge = bridge.NewBridgeMQ(named.Bridge)
-	return nil
-}
+//func (p *Plugins) UnmarshalJSON(b []byte) error {
+//	var named NamedPlugins
+//	err := json.Unmarshal(b, &named)
+//	if err != nil {
+//		return err
+//	}
+//	p.Auth = auth.NewAuth(named.Auth)
+//	p.Bridge = bridge.NewBridgeMQ(named.Bridge)
+//	return nil
+//}
 
 func (config *Config) check() error {
 
