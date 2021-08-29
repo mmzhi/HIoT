@@ -410,7 +410,7 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 
 	topic := packet.TopicName
 
-	if !c.broker.CheckTopicAuth(PUB, c.info.clientID, c.info.username, c.info.remoteIP, topic) {
+	if !c.broker.CheckTopicAuth(c.info.clientID, c.info.username, topic, PUB) {
 		log.Error("Pub Topics Auth failed, ", zap.String("topic", topic), zap.String("ClientID", c.info.clientID))
 		return
 	}
@@ -539,7 +539,7 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 	for i, topic := range subTopics {
 		t := topic
 		//check topic auth for client
-		if !b.CheckTopicAuth(SUB, c.info.clientID, c.info.username, c.info.remoteIP, topic) {
+		if !b.CheckTopicAuth(c.info.clientID, c.info.username, topic, SUB) {
 			log.Error("Sub topic Auth failed: ", zap.String("topic", topic), zap.String("ClientID", c.info.clientID))
 			retcodes = append(retcodes, QosFailure)
 			continue

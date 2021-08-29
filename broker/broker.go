@@ -3,14 +3,14 @@ package broker
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/fhmq/hmq/plugins/database"
+	"github.com/fhmq/hmq/plugins/extend"
 	"net"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/fhmq/hmq/plugins/bridge"
-
-	"github.com/fhmq/hmq/plugins/auth"
 
 	"github.com/fhmq/hmq/broker/lib/sessions"
 	"github.com/fhmq/hmq/broker/lib/topics"
@@ -44,8 +44,11 @@ type Broker struct {
 	clusterPool chan *Message
 	topicsMgr   *topics.Manager
 	sessionMgr  *sessions.Manager
-	auth        auth.Auth
-	bridgeMQ    bridge.BridgeMQ
+
+	database database.Database // 数据库访问接口
+	adapter  extend.IAdapter   // 适配器
+
+	bridgeMQ bridge.BridgeMQ
 }
 
 func newMessagePool() []chan *Message {
@@ -92,7 +95,6 @@ func NewBroker(config *Config) (*Broker, error) {
 		b.tlsConfig = tlsconfig
 	}
 
-	b.auth = b.config.Plugin.Auth
 	b.bridgeMQ = b.config.Plugin.Bridge
 
 	return b, nil

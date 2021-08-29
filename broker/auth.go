@@ -1,16 +1,17 @@
 package broker
 
 import (
+	"github.com/fhmq/hmq/plugins/extend"
 	"strings"
 )
 
 const (
-	SUB = "1"
-	PUB = "2"
+	SUB = extend.AccessSubscribe // 订阅
+	PUB = extend.AccessPublish   // 发布
 )
 
-func (b *Broker) CheckTopicAuth(action, clientID, username, ip, topic string) bool {
-	if b.auth != nil {
+func (b *Broker) CheckTopicAuth(clientID, username, topic string, action extend.AccessType) bool {
+	if b.adapter != nil {
 		if strings.HasPrefix(topic, "$SYS/broker/connection/clients/") {
 			return true
 		}
@@ -23,7 +24,7 @@ func (b *Broker) CheckTopicAuth(action, clientID, username, ip, topic string) bo
 			topic = substr[2]
 		}
 
-		return b.auth.CheckACL(action, clientID, username, ip, topic)
+		return b.adapter.OnClientCheckAcl(clientID, username, topic, action)
 	}
 
 	return true
@@ -31,8 +32,8 @@ func (b *Broker) CheckTopicAuth(action, clientID, username, ip, topic string) bo
 }
 
 func (b *Broker) CheckConnectAuth(clientID, username, password string) bool {
-	if b.auth != nil {
-		return b.auth.CheckConnect(clientID, username, password)
+	if b.adapter != nil {
+		return b.adapter.OnClientAuthenticate(clientID, username, password)
 	}
 
 	return true

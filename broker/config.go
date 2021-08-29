@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/plugins/auth"
 	"github.com/fhmq/hmq/plugins/bridge"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -38,13 +37,7 @@ type Database struct {
 }
 
 type Plugins struct {
-	Auth   auth.Auth
 	Bridge bridge.BridgeMQ
-}
-
-type NamedPlugins struct {
-	Auth   string
-	Bridge string
 }
 
 type RouteInfo struct {
@@ -84,7 +77,6 @@ func ConfigureConfig() (*Config, error) {
 		return nil, err
 	}
 
-	config.Plugin.Auth = auth.NewAuth("")
 	config.Plugin.Bridge = bridge.NewBridgeMQ("")
 
 	if config.Debug {
@@ -183,7 +175,7 @@ func (config *Config) check() error {
 	if config.TlsPort != "" {
 		if config.TlsInfo.CertFile == "" || config.TlsInfo.KeyFile == "" {
 			log.Error("tls config error, no cert or key file.")
-			return errors.New("tls config error, no cert or key file.")
+			return errors.New("tls config error, no cert or key file")
 		}
 		if config.TlsHost == "" {
 			config.TlsHost = "0.0.0.0"

@@ -4,7 +4,9 @@
 ## 关于
 基于 [hmq](https://github.com/fhmq/hmq) 进行二次开发的物联网平台，并不是单纯的MQTT Broker。
 
-## RUNNING
+HIoT 主要服务于我司的系统，基于我司需求而开发，便于内部交流，固使用中文文档以及中文注释。
+
+## 运行
 ```bash
 $ go get github.com/fhmq/hmq
 $ cd $GOPATH/github.com/fhmq/hmq
