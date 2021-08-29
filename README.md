@@ -1,9 +1,8 @@
-Free and High Performance MQTT Broker 
+高性能物联网平台（High Performance Internet of Things Platform）
 ============
 
-## About
-Golang MQTT Broker, Version 3.1.1, and Compatible
-for [eclipse paho client](https://github.com/eclipse?utf8=%E2%9C%93&q=mqtt&type=&language=) and mosquitto-client
+## 关于
+基于 [hmq](https://github.com/fhmq/hmq) 进行二次开发的物联网平台，并不是单纯的MQTT Broker。
 
 ## RUNNING
 ```bash

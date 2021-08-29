@@ -31,6 +31,11 @@ type Config struct {
 	TlsInfo  TLSInfo   `json:"tlsInfo"`
 	Debug    bool      `json:"debug"`
 	Plugin   Plugins   `json:"plugins"`
+	Database Database  `json:"database"`
+}
+
+type Database struct {
+	Dsn      bool   `json:"dsn"`
 }
 
 type Plugins struct {
