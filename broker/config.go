@@ -59,7 +59,7 @@ type TLSInfo struct {
 	KeyFile  string `json:"keyFile"`
 }
 
-var DefaultConfig *Config = &Config{
+var DefaultConfig = &Config{
 	Worker: 4096,
 	Host:   "0.0.0.0",
 	Port:   "1883",
@@ -71,20 +71,17 @@ var (
 
 // ConfigureConfig 配置配置文件
 func ConfigureConfig() (*Config, error) {
-	config := &Config{}
 
 	// 从 flag 获取配置
-	flagConfig, err := LoadFlag()
+	config, err := LoadFlag(DefaultConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	// 从文件中获取配置
-	tmpConfig, e := LoadConfig(flagConfig)
-	if e != nil {
-		return nil, e
-	} else {
-		config = tmpConfig
+	config, err = LoadConfig(config)
+	if err != nil {
+		return nil, err
 	}
 
 	config.Plugin.Auth = auth.NewAuth("")
@@ -104,9 +101,7 @@ func ConfigureConfig() (*Config, error) {
 }
 
 // LoadFlag 解析命令行命令
-func LoadFlag() (*Config, error) {
-
-	config := &Config{}
+func LoadFlag(config *Config) (*Config, error) {
 
 	configFile := *kingpin.Flag("config", "Config file for hmq").Short('c').
 		Default("").PlaceHolder("hiot.yml").String()
@@ -114,24 +109,24 @@ func LoadFlag() (*Config, error) {
 		viper.SetConfigFile(configFile)
 	}
 
-	config.Host = *kingpin.Flag("host", "Network host to listen on").Short('h').
-		Default("0.0.0.0").String()
-	config.Port = *kingpin.Flag("port", "Port for MQTT to listen on.").Short('p').
-		Default("1883").String()
+	kingpin.Flag("host", "Network host to listen on").Short('h').
+		Default("0.0.0.0").StringVar(&config.Host)
+	kingpin.Flag("port", "Port for MQTT to listen on.").Short('p').
+		Default("1883").StringVar(&config.Port)
 
-	config.WsPort = *kingpin.Flag("ws-port", "Port for ws to listen on").String()
-	config.WsPath = *kingpin.Flag("ws-path", "Path for ws to listen on").String()
+	kingpin.Flag("ws-port", "Port for ws to listen on").StringVar(&config.WsPort)
+	kingpin.Flag("ws-path", "Path for ws to listen on").StringVar(&config.WsPath)
 
-	config.Cluster.Port = *kingpin.Flag("cluster-port", "Cluster port from which members can connect.").String()
-	config.Router = *kingpin.Flag("router", "Router who maintenance cluster info").String()
+	kingpin.Flag("cluster-port", "Cluster port from which members can connect.").StringVar(&config.Cluster.Port)
+	kingpin.Flag("router", "Router who maintenance cluster info").StringVar(&config.Router)
 
-	config.Worker = *kingpin.Flag("worker", "Worker num to process message, perfer (client num)/10.").Short('w').
-		Default("1024").Int()
+	kingpin.Flag("worker", "Worker num to process message, perfer (client num)/10.").Short('w').
+		Default("1024").IntVar(&config.Worker)
 
-	config.HTTPPort = *kingpin.Flag("manage-port", "Port for HTTP API to listen on.").
-		Default("8080").String()
+	kingpin.Flag("manage-port", "Port for HTTP API to listen on.").
+		Default("8080").StringVar(&config.HTTPPort)
 
-	config.Debug = *kingpin.Flag("debug", "Enable Debug logging.").Bool()
+	kingpin.Flag("debug", "Enable Debug logging.").BoolVar(&config.Debug)
 
 	kingpin.Parse()
 
