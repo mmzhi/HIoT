@@ -11,7 +11,7 @@ import (
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	config, err := broker.ConfigureConfig(os.Args[1:])
+	config, err := broker.ConfigureConfig()
 	if err != nil {
 		log.Fatal("configure broker config error: ", err)
 	}

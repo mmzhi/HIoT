@@ -3,18 +3,16 @@ package broker
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
-	"github.com/spf13/viper"
-	"io/ioutil"
-	"os"
-
 	"github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/plugins/auth"
 	"github.com/fhmq/hmq/plugins/bridge"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"gopkg.in/alecthomas/kingpin.v2"
+	"io/ioutil"
+	"strings"
 )
 
 type Config struct {
@@ -36,7 +34,7 @@ type Config struct {
 }
 
 type Database struct {
-	Dsn      bool   `json:"dsn"`
+	Dsn bool `json:"dsn"`
 }
 
 type Plugins struct {
@@ -71,25 +69,32 @@ var (
 	log = logger.Prod().Named("broker")
 )
 
-func showHelp() {
-	fmt.Printf("%s\n", usageStr)
-	os.Exit(0)
-}
-
-func ConfigureConfig(args []string) (*Config, error) {
+// ConfigureConfig 配置配置文件
+func ConfigureConfig() (*Config, error) {
 	config := &Config{}
 
-	tmpConfig, e := LoadConfig()
+	// 从 flag 获取配置
+	flagConfig, err := LoadFlag()
+	if err != nil {
+		return nil, err
+	}
+
+	// 从文件中获取配置
+	tmpConfig, e := LoadConfig(flagConfig)
 	if e != nil {
 		return nil, e
 	} else {
 		config = tmpConfig
 	}
 
+	config.Plugin.Auth = auth.NewAuth("")
+	config.Plugin.Bridge = bridge.NewBridgeMQ("")
+
 	if config.Debug {
 		log = logger.Debug().Named("broker")
 	}
 
+	// 检查配置是否正确
 	if err := config.check(); err != nil {
 		return nil, err
 	}
@@ -98,93 +103,65 @@ func ConfigureConfig(args []string) (*Config, error) {
 
 }
 
-func LoadFlag(args []string) (*Config, error) {
+// LoadFlag 解析命令行命令
+func LoadFlag() (*Config, error) {
 
 	config := &Config{}
 
-	var (
-		help       bool
-		configFile string
-	)
-	fs := flag.NewFlagSet("hmq-broker", flag.ExitOnError)
-	fs.Usage = showHelp
-
-	fs.BoolVar(&help, "h", false, "Show this message.")
-	fs.BoolVar(&help, "help", false, "Show this message.")
-	fs.IntVar(&config.Worker, "w", 1024, "worker num to process message, perfer (client num)/10.")
-	fs.IntVar(&config.Worker, "worker", 1024, "worker num to process message, perfer (client num)/10.")
-	fs.StringVar(&config.HTTPPort, "httpport", "8080", "Port to listen on.")
-	fs.StringVar(&config.HTTPPort, "hp", "8080", "Port to listen on.")
-	fs.StringVar(&config.Port, "port", "1883", "Port to listen on.")
-	fs.StringVar(&config.Port, "p", "1883", "Port to listen on.")
-	fs.StringVar(&config.Host, "host", "0.0.0.0", "Network host to listen on")
-	fs.StringVar(&config.Cluster.Port, "cp", "", "Cluster port from which members can connect.")
-	fs.StringVar(&config.Cluster.Port, "clusterport", "", "Cluster port from which members can connect.")
-	fs.StringVar(&config.Router, "r", "", "Router who maintenance cluster info")
-	fs.StringVar(&config.Router, "router", "", "Router who maintenance cluster info")
-	fs.StringVar(&config.WsPort, "ws", "", "port for ws to listen on")
-	fs.StringVar(&config.WsPort, "wsport", "", "port for ws to listen on")
-	fs.StringVar(&config.WsPath, "wsp", "", "path for ws to listen on")
-	fs.StringVar(&config.WsPath, "wspath", "", "path for ws to listen on")
-	fs.StringVar(&configFile, "config", "", "config file for hmq")
-	fs.StringVar(&configFile, "c", "", "config file for hmq")
-	fs.BoolVar(&config.Debug, "debug", false, "enable Debug logging.")
-	fs.BoolVar(&config.Debug, "d", false, "enable Debug logging.")
-
-	fs.Bool("D", true, "enable Debug logging.")
-
-	if err := fs.Parse(args); err != nil {
-		return nil, err
+	configFile := *kingpin.Flag("config", "Config file for hmq").Short('c').
+		Default("").PlaceHolder("hiot.yml").String()
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
 	}
 
-	if help {
-		showHelp()
-		return nil, nil
-	}
+	config.Host = *kingpin.Flag("host", "Network host to listen on").Short('h').
+		Default("0.0.0.0").String()
+	config.Port = *kingpin.Flag("port", "Port for MQTT to listen on.").Short('p').
+		Default("1883").String()
 
-	fs.Visit(func(f *flag.Flag) {
-		switch f.Name {
-		case "D":
-			config.Debug = true
-		}
-	})
+	config.WsPort = *kingpin.Flag("ws-port", "Port for ws to listen on").String()
+	config.WsPath = *kingpin.Flag("ws-path", "Path for ws to listen on").String()
+
+	config.Cluster.Port = *kingpin.Flag("cluster-port", "Cluster port from which members can connect.").String()
+	config.Router = *kingpin.Flag("router", "Router who maintenance cluster info").String()
+
+	config.Worker = *kingpin.Flag("worker", "Worker num to process message, perfer (client num)/10.").Short('w').
+		Default("1024").Int()
+
+	config.HTTPPort = *kingpin.Flag("manage-port", "Port for HTTP API to listen on.").
+		Default("8080").String()
+
+	config.Debug = *kingpin.Flag("debug", "Enable Debug logging.").Bool()
+
+	kingpin.Parse()
 
 	return config, nil
 }
 
-func LoadConfig(filenames ...string) (*Config, error) {
-
-	if len(filenames) > 0 {
-
-	}
-
-	config := Config{}
+// LoadConfig 解析本地配置文件
+func LoadConfig(config *Config) (*Config, error) {
 
 	viper.SetConfigName("hiot")
+	viper.AddConfigPath("./config")
+	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
+		// 如果没有配置文件，返回原始内容
+		if strings.Index(err.Error(), "Not Found") >= 0 {
+			return config, nil
+		}
 		return nil, err
 	}
 
-	if err := viper.Unmarshal(&config); err != nil {
+	// 配置文件存在，转化配置文件
+	if err := viper.Unmarshal(config); err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return config, nil
 }
 
-
-//func (p *Plugins) UnmarshalJSON(b []byte) error {
-//	var named NamedPlugins
-//	err := json.Unmarshal(b, &named)
-//	if err != nil {
-//		return err
-//	}
-//	p.Auth = auth.NewAuth(named.Auth)
-//	p.Bridge = bridge.NewBridgeMQ(named.Bridge)
-//	return nil
-//}
-
+// check 检查配置文件是否正确
 func (config *Config) check() error {
 
 	if config.Worker == 0 {

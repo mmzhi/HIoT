@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	AuthHTTP = "authhttp"
-	AuthFile = "authfile"
+	AuthHTTP  = "authhttp"
+	AuthFile  = "authfile"
+	AuthMySQL = "authmysql"
 )
 
 type Auth interface {
