@@ -45,8 +45,8 @@ type Broker struct {
 	topicsMgr   *topics.Manager
 	sessionMgr  *sessions.Manager
 
-	database database.Database // 数据库访问接口
-	adapter  extend.IAdapter   // 适配器
+	database database.IDatabase // 数据库访问接口
+	adapter  extend.IAdapter    // 适配器
 
 	bridgeMQ bridge.BridgeMQ
 }

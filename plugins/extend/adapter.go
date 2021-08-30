@@ -3,7 +3,7 @@ package extend
 import "github.com/fhmq/hmq/plugins/database"
 
 // NewAdapter 创建一个新的适配器
-func NewAdapter(database database.Database) IAdapter {
+func NewAdapter(database database.IDatabase) IAdapter {
 	return struct {
 		IAuthAdapter
 		IConnectAdapter
