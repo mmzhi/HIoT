@@ -15,14 +15,16 @@ func init() {
 // builder 数据库创建生成器
 type builder struct{}
 
-// Build 创建一扩展访问对象
+// Build 创建扩展访问对象
 func (b *builder) Build(database database.IDatabase) (extend.IAdapter, error) {
 	return struct {
 		extend.IAuthAdapter
 		extend.IConnectAdapter
 		extend.IMessageAdapter
 	}{
-		IAuthAdapter:    &authAdapter{},
+		IAuthAdapter: &authAdapter{
+			Database: database,
+		},
 		IConnectAdapter: &connectAdapter{},
 		IMessageAdapter: &messageAdapter{},
 	}, nil

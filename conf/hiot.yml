@@ -2,11 +2,11 @@ workerNum: 4096
 port: "1883"
 host: "0.0.0.0"
 debug: true
-cluster:
-  host: "0.0.0.0"
-  port: "1993"
+#cluster:
+#  host: "0.0.0.0"
+#  port: "1993"
 httpPort: "8080"
-router: "127.0.0.1:9888"
+#router: "127.0.0.1:9888"
 tlsPort: "8883"
 tlsHost: "0.0.0.0"
 wsPort: "1888"
@@ -20,3 +20,5 @@ tlsInfo:
 plugins:
   auth: "authhttp"
   bridge: "kafka"
+database:
+  dsn: root:password@tcp(127.0.0.1:3306)/hiot?charset=utf8mb4&parseTime=True&loc=Local

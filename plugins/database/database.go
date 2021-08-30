@@ -12,16 +12,16 @@ type IDatabase interface {
 type IProduct interface {
 
 	// Add 添加产品
-	Add(product Product) error
+	Add(product *Product) error
 
 	// Get 获取 product
-	Get(productId string) (Product, error)
+	Get(productId string) (*Product, error)
 
 	// List 获取 product 列表
 	List(page int, limit int) ([]Product, error)
 
 	// Update 更新 product
-	Update(product Product) error
+	Update(product *Product) error
 
 	// Delete 删除指定ID产品
 	Delete(productId string) error
@@ -31,16 +31,19 @@ type IProduct interface {
 type IDevice interface {
 
 	// Add 添加设备
-	Add(device Device) error
+	Add(device *Device) error
 
 	// Get 获取 Device
-	Get(productId string, deviceId string) (Device, error)
+	Get(productId string, deviceId string) (*Device, error)
+
+	// GetSubdevice 获取指定网关对象的子设备
+	GetSubdevice(productId string, deviceId string, subProductId string, subDeviceId string) (*Device, error)
 
 	// List 获取 Device 列表
 	List(page int, limit int) ([]Device, error)
 
 	// Update 更新 Device
-	Update(device Device) error
+	Update(device *Device) error
 
 	// Delete 删除指定ID设备
 	Delete(productId string, deviceId string) error
