@@ -52,7 +52,8 @@ type IDevice interface {
 type Type string
 
 const (
-	MySQLType Type = "mysql"
+	MySQLType  Type = "mysql"
+	SQLiteType Type = "sqlite"
 )
 
 // IBuilder 构建器
@@ -85,7 +86,7 @@ func UnRegister(name string) {
 // NewDatabase 新建数据库对象
 func NewDatabase(name string, dsn string, extend string) (IDatabase, error) {
 	if name == "" {
-		name = string(MySQLType)
+		name = string(SQLiteType)
 	}
 	builder, ok := providers[name]
 	if !ok {

@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/fhmq/hmq/broker"
-	_ "github.com/fhmq/hmq/plugins/database/mysql"
+	_ "github.com/fhmq/hmq/plugins/database/sqlite"
 	_ "github.com/fhmq/hmq/plugins/extend/impl"
 )
 

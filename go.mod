@@ -22,5 +22,6 @@ require (
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
 	gorm.io/driver/mysql v1.1.2
+	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.14
 )
