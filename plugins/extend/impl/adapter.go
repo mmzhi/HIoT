@@ -5,8 +5,18 @@ import (
 	"github.com/fhmq/hmq/plugins/extend"
 )
 
-// NewAdapter 创建一个新的适配器
-func NewAdapter(database database.IDatabase) extend.IAdapter {
+func init() {
+	err := extend.Register(&builder{})
+	if err != nil {
+		return
+	}
+}
+
+// builder 数据库创建生成器
+type builder struct{}
+
+// Build 创建一扩展访问对象
+func (b *builder) Build(database database.IDatabase) (extend.IAdapter, error) {
 	return struct {
 		extend.IAuthAdapter
 		extend.IConnectAdapter
@@ -15,5 +25,5 @@ func NewAdapter(database database.IDatabase) extend.IAdapter {
 		IAuthAdapter:    &authAdapter{},
 		IConnectAdapter: &connectAdapter{},
 		IMessageAdapter: &messageAdapter{},
-	}
+	}, nil
 }

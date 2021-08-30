@@ -1,5 +1,10 @@
 package extend
 
+import (
+	"errors"
+	"github.com/fhmq/hmq/plugins/database"
+)
+
 // AccessType acl type
 type AccessType int
 
@@ -38,6 +43,34 @@ type IAdapter interface {
 	IConnectAdapter
 	IAuthAdapter
 	IMessageAdapter
+}
+
+var provider IBuilder
+
+// IBuilder 构建器
+type IBuilder interface {
+	Build(database database.IDatabase) (IAdapter, error)
+}
+
+// NewAdapter 新建适配器
+func NewAdapter(database database.IDatabase) (IAdapter, error) {
+	if provider == nil {
+		return nil, errors.New("not exists")
+	}
+	adapter, err := provider.Build(database)
+	if err != nil {
+		return nil, err
+	}
+	return adapter, nil
+}
+
+// Register adapter provider
+func Register(builder IBuilder) error {
+	if provider != nil {
+		return errors.New("already exists")
+	}
+	provider = builder
+	return nil
 }
 
 type IHandler interface {

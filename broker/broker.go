@@ -101,6 +101,12 @@ func NewBroker(config *Config) (*Broker, error) {
 		return nil, err
 	}
 
+	b.adapter, err = extend.NewAdapter(b.database)
+	if err != nil {
+		log.Error("new adapter error", zap.Error(err))
+		return nil, err
+	}
+
 	b.bridgeMQ = b.config.Plugin.Bridge
 
 	return b, nil

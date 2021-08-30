@@ -8,6 +8,7 @@ import (
 
 	"github.com/fhmq/hmq/broker"
 	_ "github.com/fhmq/hmq/plugins/database/mysql"
+	_ "github.com/fhmq/hmq/plugins/extend/impl"
 )
 
 func main() {
