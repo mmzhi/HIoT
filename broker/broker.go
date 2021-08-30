@@ -95,6 +95,12 @@ func NewBroker(config *Config) (*Broker, error) {
 		b.tlsConfig = tlsconfig
 	}
 
+	b.database, err = database.NewDatabase(b.config.Database.Type, b.config.Database.Dsn, b.config.Database.Extend)
+	if err != nil {
+		log.Error("new database error", zap.Error(err))
+		return nil, err
+	}
+
 	b.bridgeMQ = b.config.Plugin.Bridge
 
 	return b, nil

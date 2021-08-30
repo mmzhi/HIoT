@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/fhmq/hmq/broker"
+	_ "github.com/fhmq/hmq/plugins/database/mysql"
 )
 
 func main() {

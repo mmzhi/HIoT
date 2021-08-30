@@ -31,7 +31,7 @@ type IProduct interface {
 type IDevice interface {
 
 	// Add 添加设备
-	Add(product Device) error
+	Add(device Device) error
 
 	// Get 获取 Device
 	Get(productId string, deviceId string) (Device, error)
@@ -54,7 +54,7 @@ const (
 
 // IBuilder 构建器
 type IBuilder interface {
-	build(dsn string, extend string) (IDatabase, error)
+	Build(dsn string, extend string) (IDatabase, error)
 }
 
 var providers = make(map[string]IBuilder)
@@ -81,9 +81,12 @@ func UnRegister(name string) {
 
 // NewDatabase 新建数据库对象
 func NewDatabase(name string, dsn string, extend string) (IDatabase, error) {
+	if name == "" {
+		name = string(MySQLType)
+	}
 	builder, ok := providers[name]
 	if !ok {
 		return nil, errors.New("not exists")
 	}
-	return builder.build(dsn, extend)
+	return builder.Build(dsn, extend)
 }
