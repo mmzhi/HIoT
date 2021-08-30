@@ -1,4 +1,4 @@
-package extend
+package impl
 
 type messageAdapter struct {
 }

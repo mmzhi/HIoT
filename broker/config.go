@@ -11,25 +11,24 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
-	"strings"
 )
 
 type Config struct {
-	Worker   int       `json:"workerNum"`
-	HTTPPort string    `json:"httpPort"`
-	Host     string    `json:"host"`
-	Port     string    `json:"port"`
-	Cluster  RouteInfo `json:"cluster"`
-	Router   string    `json:"router"`
-	TlsHost  string    `json:"tlsHost"`
-	TlsPort  string    `json:"tlsPort"`
-	WsPath   string    `json:"wsPath"`
-	WsPort   string    `json:"wsPort"`
-	WsTLS    bool      `json:"wsTLS"`
-	TlsInfo  TLSInfo   `json:"tlsInfo"`
-	Debug    bool      `json:"debug"`
-	Plugin   Plugins   `json:"plugins"`
-	Database Database  `json:"database"`
+	WorkerNum int       `json:"workerNum"`
+	HTTPPort  string    `json:"httpPort"`
+	Host      string    `json:"host"`
+	Port      string    `json:"port"`
+	Cluster   RouteInfo `json:"cluster"`
+	Router    string    `json:"router"`
+	TlsHost   string    `json:"tlsHost"`
+	TlsPort   string    `json:"tlsPort"`
+	WsPath    string    `json:"wsPath"`
+	WsPort    string    `json:"wsPort"`
+	WsTLS     bool      `json:"wsTLS"`
+	TlsInfo   TLSInfo   `json:"tlsInfo"`
+	Debug     bool      `json:"debug"`
+	Plugin    Plugins   `json:"plugins"`
+	Database  Database  `json:"database"`
 }
 
 type Database struct {
@@ -55,9 +54,9 @@ type TLSInfo struct {
 }
 
 var DefaultConfig = &Config{
-	Worker: 4096,
-	Host:   "0.0.0.0",
-	Port:   "1883",
+	WorkerNum: 4096,
+	Host:      "0.0.0.0",
+	Port:      "1883",
 }
 
 var (
@@ -97,11 +96,10 @@ func ConfigureConfig() (*Config, error) {
 // LoadFlag 解析命令行命令
 func LoadFlag(config *Config) (*Config, error) {
 
-	configFile := *kingpin.Flag("config", "Config file for hmq").Short('c').
-		Default("").PlaceHolder("hiot.yml").String()
-	if configFile != "" {
-		viper.SetConfigFile(configFile)
-	}
+	var configFile string // 配置文件
+
+	kingpin.Flag("config", "Config file for hmq").Short('c').
+		Default("").PlaceHolder("hiot.yml").StringVar(&configFile)
 
 	kingpin.Flag("host", "Network host to listen on").Short('h').
 		Default("0.0.0.0").StringVar(&config.Host)
@@ -115,7 +113,7 @@ func LoadFlag(config *Config) (*Config, error) {
 	kingpin.Flag("router", "Router who maintenance cluster info").StringVar(&config.Router)
 
 	kingpin.Flag("worker", "Worker num to process message, perfer (client num)/10.").Short('w').
-		Default("1024").IntVar(&config.Worker)
+		Default("1024").IntVar(&config.WorkerNum)
 
 	kingpin.Flag("manage-port", "Port for HTTP API to listen on.").
 		Default("8080").StringVar(&config.HTTPPort)
@@ -124,21 +122,30 @@ func LoadFlag(config *Config) (*Config, error) {
 
 	kingpin.Parse()
 
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
+	}
+
 	return config, nil
 }
 
 // LoadConfig 解析本地配置文件
 func LoadConfig(config *Config) (*Config, error) {
 
-	viper.SetConfigName("hiot")
-	viper.AddConfigPath("./config")
-	viper.AddConfigPath(".")
+	// 没有设置配置文件，加载本地指定目录
+	if viper.ConfigFileUsed() == "" {
+		viper.SetConfigName("hiot")
+		viper.AddConfigPath("./config")
+		viper.AddConfigPath(".")
+	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		// 如果没有配置文件，返回原始内容
-		if strings.Index(err.Error(), "Not Found") >= 0 {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found; ignore error if desired
 			return config, nil
 		}
+		// Config file was found but another error was produced
 		return nil, err
 	}
 
@@ -153,8 +160,8 @@ func LoadConfig(config *Config) (*Config, error) {
 // check 检查配置文件是否正确
 func (config *Config) check() error {
 
-	if config.Worker == 0 {
-		config.Worker = 1024
+	if config.WorkerNum == 0 {
+		config.WorkerNum = 1024
 	}
 
 	if config.Port != "" {

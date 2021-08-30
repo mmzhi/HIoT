@@ -68,7 +68,7 @@ func NewBroker(config *Config) (*Broker, error) {
 	b := &Broker{
 		id:          GenUniqueId(),
 		config:      config,
-		wpool:       pool.New(config.Worker),
+		wpool:       pool.New(config.WorkerNum),
 		nodes:       make(map[string]interface{}),
 		clusterPool: make(chan *Message),
 	}
@@ -102,7 +102,7 @@ func NewBroker(config *Config) (*Broker, error) {
 
 func (b *Broker) SubmitWork(clientId string, msg *Message) {
 	if b.wpool == nil {
-		b.wpool = pool.New(b.config.Worker)
+		b.wpool = pool.New(b.config.WorkerNum)
 	}
 
 	if msg.client.typ == CLUSTER {

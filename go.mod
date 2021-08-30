@@ -13,7 +13,6 @@ require (
 	github.com/gin-gonic/gin v1.7.0
 	github.com/google/uuid v1.1.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/segmentio/fasthash v0.0.0-20180216231524-a72b379d632e
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0

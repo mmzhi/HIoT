@@ -30,7 +30,6 @@ type IMessageAdapter interface {
 	OnClientSubscribe(clientID, username, topic string)
 	// OnClientUnsubscribe 客户端取消订阅Topic
 	OnClientUnsubscribe(clientID, username, topic string)
-
 	// OnMessagePublish 客户端发布消息
 	OnMessagePublish(clientID, username, topic string, data []byte)
 }
