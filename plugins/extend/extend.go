@@ -5,6 +5,8 @@ import (
 	"github.com/fhmq/hmq/plugins/database"
 )
 
+// 扩展功能，该插件为必选
+
 // AccessType acl type
 type AccessType int
 
@@ -73,6 +75,7 @@ func Register(builder IBuilder) error {
 	return nil
 }
 
+// IHandler broker要实现的接口
 type IHandler interface {
 	Publish(topic string, data []byte)
 }

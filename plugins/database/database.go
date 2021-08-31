@@ -2,6 +2,8 @@ package database
 
 import "errors"
 
+// 数据库功能，该插件为必选
+
 // IDatabase 数据库接口
 type IDatabase interface {
 	Product() IProduct
