@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"github.com/fhmq/hmq/plugins/database"
+	"github.com/fhmq/hmq/database"
 	"gorm.io/gorm"
 )
 

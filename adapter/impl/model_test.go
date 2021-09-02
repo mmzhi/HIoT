@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/fhmq/hmq/plugins/database"
+	"github.com/fhmq/hmq/database"
 	"testing"
 )
 

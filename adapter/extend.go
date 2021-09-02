@@ -1,8 +1,8 @@
-package extend
+package adapter
 
 import (
 	"errors"
-	"github.com/fhmq/hmq/plugins/database"
+	"github.com/fhmq/hmq/database"
 )
 
 // 扩展功能，该插件为必选

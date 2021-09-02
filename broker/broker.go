@@ -3,8 +3,9 @@ package broker
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/fhmq/hmq/plugins/database"
-	"github.com/fhmq/hmq/plugins/extend"
+	"github.com/fhmq/hmq/adapter"
+	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/plugins/manage"
 	"net"
 	"net/http"
 	"sync"
@@ -46,7 +47,7 @@ type Broker struct {
 	sessionMgr  *sessions.Manager
 
 	database database.IDatabase // 数据库访问接口
-	adapter  extend.IAdapter    // 适配器
+	adapter  adapter.IAdapter   // 适配器
 
 	bridgeMQ bridge.BridgeMQ
 }
@@ -101,7 +102,7 @@ func NewBroker(config *Config) (*Broker, error) {
 		return nil, err
 	}
 
-	b.adapter, err = extend.NewAdapter(b.database)
+	b.adapter, err = adapter.NewAdapter(b.database)
 	if err != nil {
 		log.Error("new adapter error", zap.Error(err))
 		return nil, err
@@ -134,7 +135,8 @@ func (b *Broker) Start() {
 	}
 
 	if b.config.HTTPPort != "" {
-		go InitHTTPMoniter(b)
+		m, _ := manage.NewManage(b.database)
+		go m.Run()
 	}
 
 	//listen client over tcp

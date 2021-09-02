@@ -1,13 +1,13 @@
 package mysql
 
 import (
-	"github.com/fhmq/hmq/plugins/database"
-	"gorm.io/driver/sqlite"
+	"github.com/fhmq/hmq/database"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func init() {
-	err := database.Register(string(database.SQLiteType), &builder{})
+	err := database.Register(string(database.MySQLType), &builder{})
 	if err != nil {
 		return
 	}
@@ -18,11 +18,7 @@ type builder struct{}
 
 // Build 创建一个数据库对象
 func (b *builder) Build(dsn string, extend string) (database.IDatabase, error) {
-	db, err := gorm.Open(sqlite.Open("hiot.db"), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-	err = db.AutoMigrate(&database.Product{}, &database.Device{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}

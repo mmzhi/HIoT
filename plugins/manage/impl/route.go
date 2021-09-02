@@ -1,5 +1,10 @@
 package impl
 
+import (
+	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/plugins/manage"
+)
+
 // HTTP接口一览
 //
 // 产品管理
@@ -26,7 +31,26 @@ package impl
 // 1、向指定设备发送异步消息		POST	/api/v1/message/publish
 // 2、rrpc向设备发送同步消息		POST	/api/v1/message/rrpc
 
-type manage struct {
+func init() {
+	err := manage.Register(&builder{})
+	if err != nil {
+		return
+	}
+}
+
+// builder 数据库创建生成器
+type builder struct{}
+
+// Build 创建扩展访问对象
+func (b *builder) Build(database database.IDatabase) (manage.IManage, error) {
+	return &route{}, nil
+}
+
+type route struct {
+}
+
+func (r *route) Run() {
+
 }
 
 // Response 应答结构体

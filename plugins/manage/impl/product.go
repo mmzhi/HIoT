@@ -1,8 +1,8 @@
 package impl
 
 import (
-	"github.com/fhmq/hmq/plugins/database"
-	"github.com/fhmq/hmq/plugins/extend"
+	"github.com/fhmq/hmq/adapter"
+	"github.com/fhmq/hmq/database"
 	"github.com/gin-gonic/gin"
 	"github.com/segmentio/ksuid"
 	"net/http"
@@ -11,7 +11,7 @@ import (
 // ProductController 产品控制器
 type ProductController struct {
 	database database.IDatabase // 数据库功能
-	handler  extend.IHandler    // broker扩展方法
+	handler  adapter.IHandler   // broker扩展方法
 }
 
 // ProductAddRequest 添加产品 请求

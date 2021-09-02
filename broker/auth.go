@@ -1,16 +1,16 @@
 package broker
 
 import (
-	"github.com/fhmq/hmq/plugins/extend"
+	"github.com/fhmq/hmq/adapter"
 	"strings"
 )
 
 const (
-	SUB = extend.AccessSubscribe // 订阅
-	PUB = extend.AccessPublish   // 发布
+	SUB = adapter.AccessSubscribe // 订阅
+	PUB = adapter.AccessPublish   // 发布
 )
 
-func (b *Broker) CheckTopicAuth(clientID, username, topic string, action extend.AccessType) bool {
+func (b *Broker) CheckTopicAuth(clientID, username, topic string, action adapter.AccessType) bool {
 	if b.adapter != nil {
 		if strings.HasPrefix(topic, "$SYS/broker/connection/clients/") {
 			return true

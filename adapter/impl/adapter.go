@@ -1,12 +1,12 @@
 package impl
 
 import (
-	"github.com/fhmq/hmq/plugins/database"
-	"github.com/fhmq/hmq/plugins/extend"
+	"github.com/fhmq/hmq/adapter"
+	"github.com/fhmq/hmq/database"
 )
 
 func init() {
-	err := extend.Register(&builder{})
+	err := adapter.Register(&builder{})
 	if err != nil {
 		return
 	}
@@ -16,11 +16,11 @@ func init() {
 type builder struct{}
 
 // Build 创建扩展访问对象
-func (b *builder) Build(database database.IDatabase) (extend.IAdapter, error) {
+func (b *builder) Build(database database.IDatabase) (adapter.IAdapter, error) {
 	return struct {
-		extend.IAuthAdapter
-		extend.IConnectAdapter
-		extend.IMessageAdapter
+		adapter.IAuthAdapter
+		adapter.IConnectAdapter
+		adapter.IMessageAdapter
 	}{
 		IAuthAdapter: &authAdapter{
 			Database: database,
