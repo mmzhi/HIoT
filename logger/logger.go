@@ -26,6 +26,7 @@ func NewDevLogger() (*zap.Logger, error) {
 	logCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	// logCfg.DisableStacktrace = true
 	logCfg.EncoderConfig = encoderCfg
+	logCfg.Encoding = "console"
 	return logCfg.Build()
 }
 

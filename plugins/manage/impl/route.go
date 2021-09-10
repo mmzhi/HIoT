@@ -1,8 +1,9 @@
 package impl
 
 import (
+	"github.com/fhmq/hmq/adapter"
 	"github.com/fhmq/hmq/database"
-	"github.com/fhmq/hmq/plugins/manage"
+	"github.com/gin-gonic/gin"
 )
 
 // HTTP接口一览
@@ -31,54 +32,17 @@ import (
 // 1、向指定设备发送异步消息		POST	/api/v1/message/publish
 // 2、rrpc向设备发送同步消息		POST	/api/v1/message/rrpc
 
-func init() {
-	err := manage.Register(&builder{})
-	if err != nil {
-		return
-	}
+// Engine HTTP对象
+type Engine struct {
+	*gin.Engine
+	database database.IDatabase // 数据库功能
+	handler  adapter.IHandler   // broker扩展方法
 }
 
-// builder 数据库创建生成器
-type builder struct{}
-
-// Build 创建扩展访问对象
-func (b *builder) Build(database database.IDatabase) (manage.IManage, error) {
-	return &route{}, nil
-}
-
-type route struct {
-}
-
-func (r *route) Run() {
-
-}
-
-// Response 应答结构体
-type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
-
-// fail 错误的应答
-func fail(code int, message string) *Response {
-	if message == "" {
-		message = "Error"
-	}
-	if code == 0 {
-		code = -1
-	}
-	return &Response{
-		Code:    code,
-		Message: message,
-	}
-}
-
-// success 成功的应答
-func success(data interface{}) *Response {
-	return &Response{
-		Code:    0,
-		Message: "OK",
-		Data:    data,
-	}
+// Run 运行
+func (e *Engine) Run() {
+	gin.SetMode(gin.DebugMode)
+	e.Engine = gin.Default()
+	NewProductController(e).Run()
+	e.Engine.Run("0.0.0.0:8848")
 }
