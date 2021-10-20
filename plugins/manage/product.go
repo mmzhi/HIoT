@@ -1,9 +1,8 @@
-package impl
+package manage
 
 import (
 	"fmt"
 	"github.com/fhmq/hmq/database"
-	"github.com/fhmq/hmq/plugins/manage"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/segmentio/ksuid"
@@ -16,7 +15,7 @@ type ProductController struct {
 }
 
 // NewProductController 新建ProductController
-func NewProductController(e *Engine) manage.IManage {
+func NewProductController(e *Engine) IManage {
 	return &ProductController{e}
 }
 

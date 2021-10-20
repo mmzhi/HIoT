@@ -6,11 +6,9 @@ import (
 	"os/signal"
 	"runtime"
 
-	_ "github.com/fhmq/hmq/adapter/impl"
 	"github.com/fhmq/hmq/broker"
 	_ "github.com/fhmq/hmq/database/mysql"
 	_ "github.com/fhmq/hmq/database/sqlite"
-	_ "github.com/fhmq/hmq/plugins/manage/impl"
 )
 
 func main() {

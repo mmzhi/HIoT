@@ -10,7 +10,7 @@ type IDatabase interface {
 	Device() IDevice
 }
 
-// IProduct 产品接口
+// IProduct 产品数据库接口
 type IProduct interface {
 
 	// Add 添加产品
@@ -29,7 +29,7 @@ type IProduct interface {
 	Delete(productId string) error
 }
 
-// IDevice 设备接口
+// IDevice 设备数据库接口
 type IDevice interface {
 
 	// Add 添加设备
@@ -51,6 +51,7 @@ type IDevice interface {
 	Delete(productId string, deviceId string) error
 }
 
+// Type 数据库类型，目前仅支持两种，mysql和sqlite
 type Type string
 
 const (
@@ -60,12 +61,13 @@ const (
 
 // IBuilder 构建器
 type IBuilder interface {
+	// Build DSN信息，可参照https://gorm.io/zh_CN/docs/connecting_to_the_database.html
 	Build(dsn string, extend string) (IDatabase, error)
 }
 
 var providers = make(map[string]IBuilder)
 
-// Register database provider
+// Register 数据库方法
 func Register(name string, i IBuilder) error {
 	if name == "" || i == nil {
 		return errors.New("invalid args")

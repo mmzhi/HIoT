@@ -1,4 +1,4 @@
-package impl
+package adapter
 
 type connectAdapter struct {
 }

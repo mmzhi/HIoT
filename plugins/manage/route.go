@@ -1,4 +1,4 @@
-package impl
+package manage
 
 import (
 	"github.com/fhmq/hmq/adapter"

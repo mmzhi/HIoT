@@ -1,11 +1,10 @@
 package adapter
 
 import (
-	"errors"
 	"github.com/fhmq/hmq/database"
 )
 
-// 扩展功能，该插件为必选
+// 扩展功能
 
 // AccessType acl type
 type AccessType int
@@ -41,41 +40,29 @@ type IMessageAdapter interface {
 	OnMessagePublish(clientID, username, topic string, data []byte)
 }
 
+// IAdapter 适配器总接口
 type IAdapter interface {
 	IConnectAdapter
 	IAuthAdapter
 	IMessageAdapter
 }
 
-var provider IBuilder
-
-// IBuilder 构建器
-type IBuilder interface {
-	Build(database database.IDatabase) (IAdapter, error)
+// IHandler broker要实现的接口
+type IHandler interface {
+	Publish(topic string, data []byte)
 }
 
 // NewAdapter 新建适配器
 func NewAdapter(database database.IDatabase) (IAdapter, error) {
-	if provider == nil {
-		return nil, errors.New("not exists")
-	}
-	adapter, err := provider.Build(database)
-	if err != nil {
-		return nil, err
-	}
-	return adapter, nil
-}
-
-// Register adapter provider
-func Register(builder IBuilder) error {
-	if provider != nil {
-		return errors.New("already exists")
-	}
-	provider = builder
-	return nil
-}
-
-// IHandler broker要实现的接口
-type IHandler interface {
-	Publish(topic string, data []byte)
+	return struct {
+		IAuthAdapter
+		IConnectAdapter
+		IMessageAdapter
+	}{
+		IAuthAdapter: &authAdapter{
+			Database: database,
+		},
+		IConnectAdapter: &connectAdapter{},
+		IMessageAdapter: &messageAdapter{},
+	}, nil
 }

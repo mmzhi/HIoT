@@ -1,8 +1,7 @@
-package impl
+package adapter
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/adapter"
 	"github.com/fhmq/hmq/database"
 	"regexp"
 	"strings"
@@ -60,7 +59,7 @@ func (adapter *authAdapter) OnClientAuthenticate(clientID, username, password st
 	return deviceBo.valid(password)
 }
 
-func (adapter *authAdapter) OnClientCheckAcl(clientID, username, topic string, accessType adapter.AccessType) bool {
+func (adapter *authAdapter) OnClientCheckAcl(clientID, username, topic string, accessType AccessType) bool {
 
 	if clientID != username {
 		// 不符合clientID和username的命名规则

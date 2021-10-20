@@ -2,6 +2,7 @@ package database
 
 import "time"
 
+// ProductType 产品类型
 type ProductType int
 
 const (
@@ -10,6 +11,7 @@ const (
 	SubDeviceType ProductType = 3 // 子设备
 )
 
+// DeviceState 设备状态
 type DeviceState int
 
 const (
@@ -19,7 +21,7 @@ const (
 	DisabledState DeviceState = 3 // 禁用
 )
 
-// Product Table of product
+// Product 产品的表结构声明
 type Product struct {
 	ProductId string `gorm:"primaryKey"`
 
@@ -34,7 +36,7 @@ func (*Product) TableName() string {
 	return "product"
 }
 
-// Device Table of device
+// Device 设备的表结构声明
 type Device struct {
 	ProductId string `gorm:"primaryKey"`
 	DeviceId  string `gorm:"primaryKey"`
