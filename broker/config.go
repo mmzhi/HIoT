@@ -15,7 +15,6 @@ import (
 
 type Config struct {
 	WorkerNum int       `json:"workerNum"`
-	HTTPPort  string    `json:"httpPort"`
 	Host      string    `json:"host"`
 	Port      string    `json:"port"`
 	Cluster   RouteInfo `json:"cluster"`
@@ -29,12 +28,17 @@ type Config struct {
 	Debug     bool      `json:"debug"`
 	Plugin    Plugins   `json:"plugins"`
 	Database  Database  `json:"database"`
+	Manage    Manage    `json:"manage"`
 }
 
 type Database struct {
 	Type   string `json:"type"`   // 数据库类型
 	Dsn    string `json:"dsn"`    // dsn地址
 	Extend string `json:"extend"` // 其他配置，需自行解析
+}
+
+type Manage struct {
+	Port int `json:"port"` // 管理用的HTTP端口
 }
 
 type Plugins struct {
@@ -116,7 +120,7 @@ func LoadFlag(config *Config) (*Config, error) {
 		Default("1024").IntVar(&config.WorkerNum)
 
 	kingpin.Flag("manage-port", "Port for HTTP API to listen on.").
-		Default("8080").StringVar(&config.HTTPPort)
+		Default("8080").IntVar(&config.Manage.Port)
 
 	kingpin.Flag("debug", "Enable Debug logging.").BoolVar(&config.Debug)
 

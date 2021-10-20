@@ -1,9 +1,11 @@
 package manage
 
 import (
+	"fmt"
 	"github.com/fhmq/hmq/adapter"
 	"github.com/fhmq/hmq/database"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // HTTP接口一览
@@ -35,6 +37,7 @@ import (
 // Engine HTTP对象
 type Engine struct {
 	*gin.Engine
+	config   *Config            // 配置
 	database database.IDatabase // 数据库功能
 	handler  adapter.IHandler   // broker扩展方法
 }
@@ -44,5 +47,8 @@ func (e *Engine) Run() {
 	gin.SetMode(gin.DebugMode)
 	e.Engine = gin.Default()
 	NewProductController(e).Run()
-	e.Engine.Run("0.0.0.0:8848")
+	err := e.Engine.Run(fmt.Sprintf("0.0.0.0:%d", e.config.Port))
+	if err != nil {
+		log.Fatal("http manage error", zap.Error(err))
+	}
 }

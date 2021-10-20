@@ -2,7 +2,17 @@ package manage
 
 import (
 	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/logger"
+	"go.uber.org/zap"
 )
+
+var (
+	log = logger.Prod().Named("manage")
+)
+
+type Config struct {
+	Port int // 端口
+}
 
 // IManage HTTP接口管理
 type IManage interface {
@@ -11,8 +21,16 @@ type IManage interface {
 }
 
 // NewManage 新建适配器
-func NewManage(database database.IDatabase) (IManage, error) {
+func NewManage(config *Config) (IManage, error) {
+
+	db, err := database.Database()
+	if err != nil {
+		log.Error("get database error", zap.Error(err))
+		return nil, err
+	}
+
 	return &Engine{
-		database: database,
+		config:   config,
+		database: db,
 	}, nil
 }

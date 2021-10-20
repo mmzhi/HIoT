@@ -46,8 +46,7 @@ type Broker struct {
 	topicsMgr   *topics.Manager
 	sessionMgr  *sessions.Manager
 
-	database database.IDatabase // 数据库访问接口
-	adapter  adapter.IAdapter   // 业务适配器
+	adapter adapter.IAdapter // 业务适配器
 
 	bridgeMQ bridge.BridgeMQ
 }
@@ -96,13 +95,19 @@ func NewBroker(config *Config) (*Broker, error) {
 		b.tlsConfig = tlsconfig
 	}
 
-	b.database, err = database.NewDatabase(b.config.Database.Type, b.config.Database.Dsn, b.config.Database.Extend)
+	err = database.InitDatabase(b.config.Database.Type, b.config.Database.Dsn, b.config.Database.Extend)
 	if err != nil {
-		log.Error("new database error", zap.Error(err))
+		log.Error("init database error", zap.Error(err))
 		return nil, err
 	}
 
-	b.adapter, err = adapter.NewAdapter(b.database)
+	db, err := database.Database()
+	if err != nil {
+		log.Error("get database error", zap.Error(err))
+		return nil, err
+	}
+
+	b.adapter, err = adapter.NewAdapter(db)
 	if err != nil {
 		log.Error("new adapter error", zap.Error(err))
 		return nil, err
@@ -135,8 +140,14 @@ func (b *Broker) Start() {
 	}
 
 	// HTTP管理接口
-	if b.config.HTTPPort != "" {
-		m, _ := manage.NewManage(b.database)
+	{
+		m, err := manage.NewManage(&manage.Config{
+			Port: b.config.Manage.Port,
+		})
+		if err != nil {
+			log.Error("new manage fail", zap.Error(err))
+			return
+		}
 		go m.Run()
 	}
 

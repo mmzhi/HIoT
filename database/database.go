@@ -87,14 +87,25 @@ func UnRegister(name string) {
 	delete(providers, name)
 }
 
-// NewDatabase 新建数据库对象
-func NewDatabase(name string, dsn string, extend string) (IDatabase, error) {
+var _database IDatabase
+
+// Database 获取数据库
+func Database() (IDatabase, error) {
+	if _database == nil {
+		return nil, errors.New("database is not initialization")
+	}
+	return _database, nil
+}
+
+// InitDatabase 新建数据库对象
+func InitDatabase(name string, dsn string, extend string) (err error) {
 	if name == "" {
 		name = string(SQLiteType)
 	}
 	builder, ok := providers[name]
 	if !ok {
-		return nil, errors.New("not exists")
+		return errors.New("not exists")
 	}
-	return builder.Build(dsn, extend)
+	_database, err = builder.Build(dsn, extend)
+	return err
 }
