@@ -47,7 +47,7 @@ type Broker struct {
 	sessionMgr  *sessions.Manager
 
 	database database.IDatabase // 数据库访问接口
-	adapter  adapter.IAdapter   // 适配器
+	adapter  adapter.IAdapter   // 业务适配器
 
 	bridgeMQ bridge.BridgeMQ
 }
@@ -134,6 +134,7 @@ func (b *Broker) Start() {
 		return
 	}
 
+	// HTTP管理接口
 	if b.config.HTTPPort != "" {
 		m, _ := manage.NewManage(b.database)
 		go m.Run()
@@ -372,6 +373,14 @@ func (b *Broker) handleConnection(typ int, conn net.Conn) {
 			}
 		}
 		b.clients.Store(cid, c)
+
+		// 获取IP地址
+		var ipaddress string
+		if addr, ok := conn.RemoteAddr().(*net.TCPAddr); ok {
+			ipaddress = addr.IP.String()
+		}
+		// 连接成功调用
+		b.adapter.OnClientConnected(msg.ClientIdentifier, msg.Username, ipaddress)
 
 		b.OnlineOfflineNotification(cid, true)
 		{

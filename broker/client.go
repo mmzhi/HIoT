@@ -415,7 +415,10 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 		return
 	}
 
-	//publish kafka
+	// 发消息处理
+	c.broker.adapter.OnMessagePublish(c.info.clientID, c.info.username, topic, packet.Payload)
+
+	// publish kafka
 	c.broker.Publish(&bridge.Elements{
 		ClientID:  c.info.clientID,
 		Username:  c.info.username,
@@ -544,6 +547,9 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 			retcodes = append(retcodes, QosFailure)
 			continue
 		}
+
+		// 订阅处理
+		b.adapter.OnClientSubscribe(c.info.clientID, c.info.username, topic)
 
 		b.Publish(&bridge.Elements{
 			ClientID:  c.info.clientID,
@@ -742,9 +748,12 @@ func (c *client) processClientUnSubscribe(packet *packets.UnsubscribePacket) {
 	unSubTopics := packet.Topics
 
 	for _, topic := range unSubTopics {
+
+		// 取消订阅处理
+		b.adapter.OnClientUnsubscribe(c.info.clientID, c.info.username, topic)
+
 		{
 			//publish kafka
-
 			b.Publish(&bridge.Elements{
 				ClientID:  c.info.clientID,
 				Username:  c.info.username,
@@ -803,6 +812,10 @@ func (c *client) Close() {
 	// c.status = Disconnected
 
 	b := c.broker
+
+	// 断开连接的通知
+	b.adapter.OnClientDisconnected(c.info.clientID, c.info.username)
+
 	b.Publish(&bridge.Elements{
 		ClientID:  c.info.clientID,
 		Username:  c.info.username,
