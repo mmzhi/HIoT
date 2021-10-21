@@ -1,7 +1,5 @@
 package bridge
 
-import "github.com/fhmq/hmq/logger"
-
 const (
 	//Connect mqtt connect
 	Connect = "connect"
@@ -13,10 +11,6 @@ const (
 	Unsubscribe = "unsubscribe"
 	//Disconnect mqtt disconenct
 	Disconnect = "disconnect"
-)
-
-var (
-	log = logger.Get().Named("bridge")
 )
 
 //Elements kafka publish elements

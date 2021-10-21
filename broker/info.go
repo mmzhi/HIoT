@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/fhmq/hmq/logger"
+
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/eclipse/paho.mqtt.golang/packets"
 	"go.uber.org/zap"

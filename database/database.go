@@ -16,13 +16,13 @@ type IProduct interface {
 	// Add 添加产品
 	Add(product *Product) error
 
-	// Get 获取 product
+	// Get 获取产品
 	Get(productId string) (*Product, error)
 
-	// List 获取 product 列表
+	// List 获取产品列表
 	List(page int, limit int) ([]Product, error)
 
-	// Update 更新 product
+	// Update 更新产品
 	Update(product *Product) error
 
 	// Delete 删除指定ID产品

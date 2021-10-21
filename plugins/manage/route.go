@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fhmq/hmq/adapter"
 	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -49,6 +50,6 @@ func (e *Engine) Run() {
 	NewProductController(e).Run()
 	err := e.Engine.Run(fmt.Sprintf("0.0.0.0:%d", e.config.Port))
 	if err != nil {
-		log.Fatal("http manage error", zap.Error(err))
+		logger.Fatal("http manage error", zap.Error(err))
 	}
 }

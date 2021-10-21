@@ -3,6 +3,7 @@ package bridge
 import (
 	"encoding/json"
 	"errors"
+	"github.com/fhmq/hmq/logger"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -28,16 +29,16 @@ type kafka struct {
 
 //Init init kafak client
 func InitKafka() *kafka {
-	log.Info("start connect kafka....")
+	logger.Info("start connect kafka....")
 	content, err := ioutil.ReadFile("./plugins/kafka/kafka.json")
 	if err != nil {
-		log.Fatal("Read config file error: ", zap.Error(err))
+		logger.Fatal("Read config file error: ", zap.Error(err))
 	}
 	// log.Info(string(content))
 	var config kafakConfig
 	err = json.Unmarshal(content, &config)
 	if err != nil {
-		log.Fatal("Unmarshal config file error: ", zap.Error(err))
+		logger.Fatal("Unmarshal config file error: ", zap.Error(err))
 	}
 	c := &kafka{kafakConfig: config}
 	c.connect()
@@ -50,12 +51,12 @@ func (k *kafka) connect() {
 	conf.Version = sarama.V1_1_1_0
 	kafkaClient, err := sarama.NewAsyncProducer(k.kafakConfig.Addr, conf)
 	if err != nil {
-		log.Fatal("create kafka async producer failed: ", zap.Error(err))
+		logger.Fatal("create kafka async producer failed: ", zap.Error(err))
 	}
 
 	go func() {
 		for err := range kafkaClient.Errors() {
-			log.Error("send msg to kafka failed: ", zap.Error(err))
+			logger.Error("send msg to kafka failed: ", zap.Error(err))
 		}
 	}()
 

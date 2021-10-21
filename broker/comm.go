@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"time"
 
+	log "github.com/fhmq/hmq/logger"
+
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 

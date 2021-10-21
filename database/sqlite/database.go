@@ -18,17 +18,17 @@ type builder struct{}
 
 // Build 创建一个数据库对象
 func (b *builder) Build(dsn string, extend string) (database.IDatabase, error) {
-	db, err := gorm.Open(sqlite.Open("hiot.db"), &gorm.Config{})
+	orm, err := gorm.Open(sqlite.Open("hiot.db"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	err = db.AutoMigrate(&database.Product{}, &database.Device{})
+	err = orm.AutoMigrate(&database.Product{}, &database.Device{})
 	if err != nil {
 		return nil, err
 	}
 	return &_db{
-		product: nil,
-		device:  &_device{db},
+		product: &_product{orm},
+		device:  &_device{orm},
 	}, nil
 }
 

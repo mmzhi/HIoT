@@ -63,10 +63,6 @@ var DefaultConfig = &Config{
 	Port:      "1883",
 }
 
-var (
-	log = logger.Prod().Named("broker")
-)
-
 // ConfigureConfig 配置配置文件
 func ConfigureConfig() (*Config, error) {
 
@@ -85,7 +81,9 @@ func ConfigureConfig() (*Config, error) {
 	config.Plugin.Bridge = bridge.NewBridgeMQ("")
 
 	if config.Debug {
-		log = logger.Debug().Named("broker")
+		logger.ConfigLogger(logger.Config{
+			Debug: true,
+		})
 	}
 
 	// 检查配置是否正确
@@ -187,7 +185,7 @@ func (config *Config) check() error {
 
 	if config.TlsPort != "" {
 		if config.TlsInfo.CertFile == "" || config.TlsInfo.KeyFile == "" {
-			log.Error("tls config error, no cert or key file.")
+			logger.Error("tls config error, no cert or key file.")
 			return errors.New("tls config error, no cert or key file")
 		}
 		if config.TlsHost == "" {

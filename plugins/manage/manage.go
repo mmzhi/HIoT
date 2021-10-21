@@ -6,10 +6,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	log = logger.Prod().Named("manage")
-)
-
 type Config struct {
 	Port int // 端口
 }
@@ -25,7 +21,7 @@ func NewManage(config *Config) (IManage, error) {
 
 	db, err := database.Database()
 	if err != nil {
-		log.Error("get database error", zap.Error(err))
+		logger.Error("get database error", zap.Error(err))
 		return nil, err
 	}
 

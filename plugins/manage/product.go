@@ -106,6 +106,18 @@ func (ctr *ProductController) update(c *gin.Context) {
 	c.JSON(http.StatusOK, success(nil))
 }
 
+// ProductListItemRequest 产品列表子项 请求
+type ProductListItemRequest struct {
+	ProductId   *string               `json:"productId"`
+	ProductType *database.ProductType `json:"productType" binding:"min=1,max=3"`
+	ProductName *string               `json:"productName" binding:"required"`
+}
+
+// ProductListRequest 产品列表 请求
+type ProductListRequest struct {
+	List 		[]ProductListItemRequest	`json:"list"`
+}
+
 // list 获取产品列表
 func (ctr *ProductController) list(c *gin.Context) {
 

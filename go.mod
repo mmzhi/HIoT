@@ -17,12 +17,12 @@ require (
 	github.com/segmentio/fasthash v0.0.0-20180216231524-a72b379d632e
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/viper v1.8.1
-	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.6.8
 	go.uber.org/zap v1.17.0
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.14
