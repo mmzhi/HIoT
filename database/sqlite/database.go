@@ -18,7 +18,9 @@ type builder struct{}
 
 // Build 创建一个数据库对象
 func (b *builder) Build(dsn string, extend string) (database.IDatabase, error) {
-	orm, err := gorm.Open(sqlite.Open("hiot.db"), &gorm.Config{})
+	orm, err := gorm.Open(sqlite.Open("hiot.db"), &gorm.Config{
+		Logger: database.NewGormLogger(),
+	})
 	if err != nil {
 		return nil, err
 	}

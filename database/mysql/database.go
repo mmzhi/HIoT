@@ -18,7 +18,9 @@ type builder struct{}
 
 // Build 创建一个数据库对象
 func (b *builder) Build(dsn string, extend string) (database.IDatabase, error) {
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: database.NewGormLogger(),
+	})
 	if err != nil {
 		return nil, err
 	}

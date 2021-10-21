@@ -8,27 +8,27 @@ import (
 	"path"
 )
 
-var logger *zap.Logger
+var (
+	logger      *zap.Logger
+	sugarLogger *zap.SugaredLogger
+)
 
 // Config 配置文件
 type Config struct {
-	Path  			string 		// 日志位置，如果为空，则输出到屏幕
-	Debug 			bool  		// 调试模式
+	Path  string // 日志位置，如果为空，则输出到屏幕
+	Debug bool   // 调试模式
 }
 
 // init 默认初始化
 func init() {
 	logger = NewLogger()
+	sugarLogger = logger.Sugar()
 }
 
 // ConfigLogger 配置日志
 func ConfigLogger(config Config) {
 	logger = NewLogger(config)
-}
-
-// Logger 返回内置的Logger
-func Logger() *zap.Logger {
-	return logger
+	sugarLogger = logger.Sugar()
 }
 
 // NewLogger 新建ZAP日志
@@ -100,4 +100,28 @@ func Panic(msg string, fields ...zap.Field) {
 
 func Fatal(msg string, fields ...zap.Field) {
 	logger.Fatal(msg, fields...)
+}
+
+func Debugf(template string, args ...interface{}) {
+	sugarLogger.Debugf(template, args...)
+}
+
+func Infof(template string, args ...interface{}) {
+	sugarLogger.Infof(template, args...)
+}
+
+func Warnf(template string, args ...interface{}) {
+	sugarLogger.Warnf(template, args...)
+}
+
+func Errorf(template string, args ...interface{}) {
+	sugarLogger.Errorf(template, args...)
+}
+
+func Panicf(template string, args ...interface{}) {
+	sugarLogger.Panicf(template, args...)
+}
+
+func Fatalf(template string, args ...interface{}) {
+	sugarLogger.Fatalf(template, args...)
 }
