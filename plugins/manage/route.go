@@ -45,8 +45,9 @@ type Engine struct {
 
 // Run 运行
 func (e *Engine) Run() {
-	gin.SetMode(gin.DebugMode)
-	e.Engine = gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	e.Engine = gin.New()
+	e.Engine.Use(RecoveryWithLogger())
 	NewProductController(e).Run()
 	err := e.Engine.Run(fmt.Sprintf("0.0.0.0:%d", e.config.Port))
 	if err != nil {
