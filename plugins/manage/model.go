@@ -1,5 +1,11 @@
 package manage
 
+import (
+	"fmt"
+	"strings"
+	"time"
+)
+
 // Response 应答结构体
 type Response struct {
 	Code    int         `json:"code"`
@@ -36,4 +42,34 @@ type Page struct {
 	Size    int `json:"size"`
 	Current int `json:"current"`
 	Pages   int `json:"pages"`
+}
+
+// Datetime 日期时间控件
+type Datetime struct {
+	time.Time
+}
+
+func (dt Datetime) MarshalJSON() ([]byte, error) {
+	stamp := fmt.Sprintf("\"%s\"", dt.Time.Format(time.RFC3339))
+	return []byte(stamp), nil
+}
+
+func (dt Datetime) UnmarshalJSON(data []byte) (err error) {
+	s := strings.Trim(string(data), "\"")
+	if s == "null" {
+		dt.Time = time.Time{}
+		return
+	}
+	t, err := time.Parse(time.RFC3339, s)
+	dt.Time = t
+	return
+}
+
+// PDatetime time转换成Datetime指针
+func PDatetime(t *time.Time) *Datetime {
+	if t == nil {
+		return nil
+	}
+	dt := Datetime{*t}
+	return &dt
 }

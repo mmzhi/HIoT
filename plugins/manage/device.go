@@ -116,8 +116,57 @@ func (ctr *DeviceController) update(c *gin.Context) {
 	c.JSON(http.StatusOK, success(nil))
 }
 
+// DeviceGetResponse 获取设备信息应答
+type DeviceGetResponse struct {
+	ProductId string `json:"productId"`
+	DeviceId  string `json:"deviceId"`
+
+	ProductType  database.ProductType `json:"productType"`
+	DeviceName   string               `json:"deviceName"`
+	DeviceSecret string               `json:"deviceSecret"`
+
+	FirmwareVersion *string              `json:"firmwareVersion"`
+	IpAddress       *string              `json:"ipAddress"`
+	State           database.DeviceState `json:"state"`
+
+	OnlineTime  *Datetime `json:"onlineTime"`
+	OfflineTime *Datetime `json:"offlineTime"`
+
+	CreatedAt Datetime `json:"createdAt"`
+	UpdatedAt Datetime `json:"updatedAt"`
+}
+
+// get 设备详情
 func (ctr *DeviceController) get(c *gin.Context) {
 
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	device, err := ctr.database.Device().Get(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(DeviceGetResponse{
+		ProductId: device.ProductId,
+		DeviceId:  device.DeviceId,
+
+		ProductType:  device.ProductType,
+		DeviceName:   device.DeviceName,
+		DeviceSecret: device.DeviceSecret,
+
+		FirmwareVersion: device.FirmwareVersion,
+		IpAddress:       device.IpAddress,
+
+		State: device.State,
+
+		OnlineTime:  PDatetime(device.OnlineTime),
+		OfflineTime: PDatetime(device.OfflineTime),
+
+		CreatedAt: Datetime{device.CreatedAt},
+		UpdatedAt: Datetime{device.UpdatedAt},
+	}))
 }
 
 func (ctr *DeviceController) list(c *gin.Context) {
