@@ -1,6 +1,9 @@
 package database
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // ProductType 产品类型
 type ProductType int
@@ -63,4 +66,35 @@ type Device struct {
 
 func (*Device) TableName() string {
 	return "device"
+}
+
+// Page 分页
+type Page struct {
+	Total   int // 总数
+	Size    int // 每页大小
+	Current int // 页码
+	Pages   int // 总页数
+}
+
+// IPage 分页接口
+type IPage interface {
+	GetCurrent() int
+	GetSize() int
+}
+
+// Paginate 分页方法
+func Paginate(page *Page) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if page.Current <= 0 {
+			page.Current = 1
+		}
+		switch {
+		case page.Size > 10000:
+			page.Size = 10000
+		case page.Size <= 0:
+			page.Size = 10
+		}
+		offset := (page.Current - 1) * page.Size
+		return db.Offset(offset).Limit(page.Size)
+	}
 }

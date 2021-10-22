@@ -29,3 +29,11 @@ func success(data interface{}) *Response {
 		Data:    data,
 	}
 }
+
+// Page 应答结构体
+type Page struct {
+	Total   int `json:"total"`
+	Size    int `json:"size"`
+	Current int `json:"current"`
+	Pages   int `json:"pages"`
+}

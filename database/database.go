@@ -20,7 +20,7 @@ type IProduct interface {
 	Get(productId string) (*Product, error)
 
 	// List 获取产品列表
-	List(page int, limit int) ([]Product, error)
+	List(Page) ([]Product, Page, error)
 
 	// Update 更新产品
 	Update(product *Product) error
@@ -42,7 +42,7 @@ type IDevice interface {
 	GetSubdevice(productId string, deviceId string, subProductId string, subDeviceId string) (*Device, error)
 
 	// List 获取 Device 列表
-	List(page int, limit int) ([]Device, error)
+	List(page Page) ([]Device, Page, error)
 
 	// Update 更新 Device
 	Update(device *Device) error

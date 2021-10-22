@@ -106,20 +106,34 @@ func (ctr *ProductController) update(c *gin.Context) {
 	c.JSON(http.StatusOK, success(nil))
 }
 
-// ProductListItemRequest 产品列表子项 请求
-type ProductListItemRequest struct {
+// ProductListRequest 产品列表请求
+type ProductListRequest struct {
+	Page Page `json:"page"`
+}
+
+// ProductListItemResponse 产品列表子项应答
+type ProductListItemResponse struct {
 	ProductId   *string               `json:"productId"`
 	ProductType *database.ProductType `json:"productType" binding:"min=1,max=3"`
 	ProductName *string               `json:"productName" binding:"required"`
 }
 
-// ProductListRequest 产品列表 请求
-type ProductListRequest struct {
-	List 		[]ProductListItemRequest	`json:"list"`
+// ProductListResponse 产品列表应答
+type ProductListResponse struct {
+	List []ProductListItemResponse `json:"list"`
+	Page Page                      `json:"page"`
 }
 
 // list 获取产品列表
 func (ctr *ProductController) list(c *gin.Context) {
+	var req ProductUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		if i, ok := err.(validator.ValidationErrors); ok {
+			fmt.Println("Error" + i.Error())
+		}
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
 
 }
 
