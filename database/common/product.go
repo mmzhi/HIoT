@@ -52,5 +52,10 @@ func (db *_product) Update(product *database.Product) error {
 
 // Delete 删除指定ID产品
 func (db *_product) Delete(productId string) error {
+	if tx := db.orm.Delete(&database.Product{
+		ProductId: productId,
+	}); tx.Error != nil {
+		return tx.Error
+	}
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/fhmq/hmq/database"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	_ "github.com/mcuadros/go-defaults"
 	"github.com/segmentio/ksuid"
 	"net/http"
 	"strconv"
@@ -156,12 +157,39 @@ func (ctr *ProductController) list(c *gin.Context) {
 	}))
 }
 
+// ProductGetResponse 获取指定产品信息请求
+type ProductGetResponse struct {
+	ProductId   *string               `json:"productId"`
+	ProductType *database.ProductType `json:"productType"`
+	ProductName *string               `json:"productName"`
+}
+
 // get 获取指定产品信息
 func (ctr *ProductController) get(c *gin.Context) {
+	var productId = c.Param("productId")
 
+	product, err := ctr.database.Product().Get(productId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(ProductGetResponse{
+		ProductId:   &product.ProductId,
+		ProductType: &product.ProductType,
+		ProductName: &product.ProductName,
+	}))
 }
 
 // delete 删除产品
 func (ctr *ProductController) delete(c *gin.Context) {
+	var productId = c.Param("productId")
 
+	err := ctr.database.Product().Delete(productId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(nil))
 }

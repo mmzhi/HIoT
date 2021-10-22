@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// 通用的数据库查询，MySQL以及SQLite均在此支持
+
 // CreateDatabase 创建一个数据库对象
 func CreateDatabase(orm *gorm.DB) (database.IDatabase, error) {
 	err := orm.AutoMigrate(&database.Product{}, &database.Device{})
