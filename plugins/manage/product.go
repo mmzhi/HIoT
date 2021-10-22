@@ -40,11 +40,6 @@ type ProductAddRequest struct {
 	ProductName *string               `json:"productName" binding:"required"`
 }
 
-// ProductAddResponse 添加产品 应答
-type ProductAddResponse struct {
-	ProductId string `json:"productId"`
-}
-
 // add 添加产品
 func (ctr *ProductController) add(c *gin.Context) {
 	var req ProductAddRequest
@@ -73,9 +68,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, success(ProductAddResponse{
-		ProductId: product.ProductId,
-	}))
+	c.JSON(http.StatusOK, success(nil))
 }
 
 // ProductUpdateRequest 	修改产品信息请求
