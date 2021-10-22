@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/model"
 	"gorm.io/gorm"
 )
 
@@ -9,7 +10,7 @@ import (
 
 // CreateDatabase 创建一个数据库对象
 func CreateDatabase(orm *gorm.DB) (database.IDatabase, error) {
-	err := orm.AutoMigrate(&database.Product{}, &database.Device{})
+	err := orm.AutoMigrate(&model.Product{}, &model.Device{})
 	if err != nil {
 		return nil, err
 	}

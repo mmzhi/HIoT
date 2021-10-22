@@ -2,7 +2,7 @@ package broker
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/model"
 	"regexp"
 	"strings"
 )
@@ -65,18 +65,18 @@ func (b *Broker) CheckTopicAuth(clientID, username, topic string, action AccessT
 	}
 
 	// 设备禁用
-	if deviceDo.State == database.DisabledState {
+	if deviceDo.State == model.DisabledState {
 		// 设备已被禁用，无法授权
 		return false
 	}
 
-	if deviceDo.ProductType == database.SubDeviceType {
+	if deviceDo.ProductType == model.SubDeviceType {
 		// 子设备无法直接授权ACL
 		return false
 	}
 
 	// 假如是设备或者网关，对于自身的topic处理
-	if deviceDo.ProductType == database.DeviceType || deviceDo.ProductType == database.GatewayType {
+	if deviceDo.ProductType == model.DeviceType || deviceDo.ProductType == model.GatewayType {
 
 		// 符合系统topic，返回
 		if strings.HasPrefix(topic, fmt.Sprintf("sys/%s/%s/", deviceDo.ProductId, deviceDo.DeviceId)) {
@@ -90,7 +90,7 @@ func (b *Broker) CheckTopicAuth(clientID, username, topic string, action AccessT
 	}
 
 	// 对于是网关类型，判断是否符合其子设备的topic
-	if deviceDo.ProductType == database.GatewayType {
+	if deviceDo.ProductType == model.GatewayType {
 		var params []string
 		// 是否符合指定topic格式
 		if params = sysTopicRegexp.FindStringSubmatch(topic); len(params) == 2 {
@@ -109,7 +109,7 @@ func (b *Broker) CheckTopicAuth(clientID, username, topic string, action AccessT
 			return false
 		}
 
-		if subDeviceDo.State == database.DisabledState {
+		if subDeviceDo.State == model.DisabledState {
 			// 子设备已被禁用，无法授权
 			return false
 		}
@@ -146,12 +146,12 @@ func (b *Broker) CheckConnectAuth(clientID, username, password string) bool {
 	}
 
 	// 设备禁用
-	if deviceDo.State == database.DisabledState {
+	if deviceDo.State == model.DisabledState {
 		// 设备已被禁用，无法授权
 		return false
 	}
 
-	if deviceDo.ProductType != database.DeviceType && deviceDo.ProductType != database.GatewayType {
+	if deviceDo.ProductType != model.DeviceType && deviceDo.ProductType != model.GatewayType {
 		// 仅允许设备和网关授权
 		return false
 	}

@@ -26,13 +26,13 @@ import (
 )
 
 const (
-	// special pub topic for cluster info BrokerInfoTopic
+	// BrokerInfoTopic special pub topic for cluster info
 	BrokerInfoTopic = "broker000100101info"
 	// CLIENT is an end user.
 	CLIENT = 0
 	// ROUTER is another router in the cluster.
 	ROUTER = 1
-	//REMOTE is the router connect to other cluster
+	// REMOTE is the router connect to other cluster
 	REMOTE  = 2
 	CLUSTER = 3
 )

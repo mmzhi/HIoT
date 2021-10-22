@@ -1,8 +1,15 @@
-package database
+package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+)
+
+// AccessType acl type
+type AccessType int
+
+const (
+	PubAccessType AccessType = 1 // 发布
+	SubAccessType AccessType = 2 // 订阅
 )
 
 // ProductType 产品类型
@@ -35,6 +42,7 @@ type Product struct {
 	UpdatedAt time.Time
 }
 
+// TableName gorm获取表名
 func (*Product) TableName() string {
 	return "product"
 }
@@ -64,6 +72,7 @@ type Device struct {
 	UpdatedAt time.Time
 }
 
+// TableName gorm获取表名
 func (*Device) TableName() string {
 	return "device"
 }
@@ -74,27 +83,4 @@ type Page struct {
 	Size    int // 每页大小
 	Current int // 页码
 	Pages   int // 总页数
-}
-
-// IPage 分页接口
-type IPage interface {
-	GetCurrent() int
-	GetSize() int
-}
-
-// Paginate 分页方法
-func Paginate(page *Page) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		if page.Current <= 0 {
-			page.Current = 1
-		}
-		switch {
-		case page.Size > 10000:
-			page.Size = 10000
-		case page.Size <= 0:
-			page.Size = 10
-		}
-		offset := (page.Current - 1) * page.Size
-		return db.Offset(offset).Limit(page.Size)
-	}
 }

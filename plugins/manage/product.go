@@ -2,7 +2,7 @@ package manage
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/model"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/mcuadros/go-defaults"
@@ -35,9 +35,9 @@ func (ctr *ProductController) Run() {
 
 // ProductAddRequest 添加产品 请求
 type ProductAddRequest struct {
-	ProductId   *string               `json:"productId"`
-	ProductType *database.ProductType `json:"productType" binding:"min=1,max=3"`
-	ProductName *string               `json:"productName" binding:"required"`
+	ProductId   *string            `json:"productId"`
+	ProductType *model.ProductType `json:"productType" binding:"min=1,max=3"`
+	ProductName *string            `json:"productName" binding:"required"`
 }
 
 // add 添加产品
@@ -51,7 +51,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 		return
 	}
 
-	var product = database.Product{
+	var product = model.Product{
 		ProductType: *req.ProductType,
 		ProductName: *req.ProductName,
 	}
@@ -89,7 +89,7 @@ func (ctr *ProductController) update(c *gin.Context) {
 
 	var productId = c.Param("productId")
 
-	err := ctr.database.Product().Update(&database.Product{
+	err := ctr.database.Product().Update(&model.Product{
 		ProductId:   productId,
 		ProductName: *req.ProductName,
 	})
@@ -103,9 +103,9 @@ func (ctr *ProductController) update(c *gin.Context) {
 
 // ProductListItemResponse 产品列表子项应答
 type ProductListItemResponse struct {
-	ProductId   *string               `json:"productId"`
-	ProductType *database.ProductType `json:"productType" binding:"min=1,max=3"`
-	ProductName *string               `json:"productName" binding:"required"`
+	ProductId   *string            `json:"productId"`
+	ProductType *model.ProductType `json:"productType" binding:"min=1,max=3"`
+	ProductName *string            `json:"productName" binding:"required"`
 }
 
 // ProductListResponse 产品列表应答
@@ -120,7 +120,7 @@ func (ctr *ProductController) list(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.Param("pageSize"))
 	pageCurrent, _ := strconv.Atoi(c.Param("pageCurrent"))
 
-	products, page, err := ctr.database.Product().List(database.Page{
+	products, page, err := ctr.database.Product().List(model.Page{
 		Current: pageCurrent,
 		Size:    pageSize,
 	})
@@ -152,9 +152,9 @@ func (ctr *ProductController) list(c *gin.Context) {
 
 // ProductGetResponse 获取指定产品信息请求
 type ProductGetResponse struct {
-	ProductId   *string               `json:"productId"`
-	ProductType *database.ProductType `json:"productType"`
-	ProductName *string               `json:"productName"`
+	ProductId   *string            `json:"productId"`
+	ProductType *model.ProductType `json:"productType"`
+	ProductName *string            `json:"productName"`
 }
 
 // get 获取指定产品信息

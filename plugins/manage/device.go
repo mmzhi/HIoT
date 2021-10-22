@@ -2,7 +2,7 @@ package manage
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/model"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"math/rand"
@@ -59,7 +59,7 @@ func (ctr *DeviceController) add(c *gin.Context) {
 	}
 	var productId = c.Param("productId")
 	var (
-		product *database.Product
+		product *model.Product
 		err     error
 	)
 	if product, err = ctr.database.Product().Get(productId); err != nil {
@@ -67,7 +67,7 @@ func (ctr *DeviceController) add(c *gin.Context) {
 		return
 	}
 
-	if err := ctr.database.Device().Add(&database.Device{
+	if err := ctr.database.Device().Add(&model.Device{
 		ProductId: product.ProductId,
 		DeviceId:  *req.DeviceId,
 
@@ -75,7 +75,7 @@ func (ctr *DeviceController) add(c *gin.Context) {
 		DeviceName:   *req.DeviceName,
 		DeviceSecret: ctr.generateSecret(),
 
-		State: database.InactiveState,
+		State: model.InactiveState,
 	}); err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return
@@ -103,7 +103,7 @@ func (ctr *DeviceController) update(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	err := ctr.database.Device().Update(&database.Device{
+	err := ctr.database.Device().Update(&model.Device{
 		ProductId:  productId,
 		DeviceId:   deviceId,
 		DeviceName: *req.DeviceName,
@@ -121,13 +121,13 @@ type DeviceGetResponse struct {
 	ProductId string `json:"productId"`
 	DeviceId  string `json:"deviceId"`
 
-	ProductType  database.ProductType `json:"productType"`
-	DeviceName   string               `json:"deviceName"`
-	DeviceSecret string               `json:"deviceSecret"`
+	ProductType  model.ProductType `json:"productType"`
+	DeviceName   string            `json:"deviceName"`
+	DeviceSecret string            `json:"deviceSecret"`
 
-	FirmwareVersion *string              `json:"firmwareVersion"`
-	IpAddress       *string              `json:"ipAddress"`
-	State           database.DeviceState `json:"state"`
+	FirmwareVersion *string           `json:"firmwareVersion"`
+	IpAddress       *string           `json:"ipAddress"`
+	State           model.DeviceState `json:"state"`
 
 	OnlineTime  *Datetime `json:"onlineTime"`
 	OfflineTime *Datetime `json:"offlineTime"`

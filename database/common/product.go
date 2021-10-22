@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/model"
 	"gorm.io/gorm"
 	"math"
 )
@@ -11,7 +12,7 @@ type _product struct {
 }
 
 // Add 添加产品
-func (db *_product) Add(product *database.Product) error {
+func (db *_product) Add(product *model.Product) error {
 	if tx := db.orm.Create(product); tx.Error != nil {
 		return tx.Error
 	}
@@ -19,8 +20,8 @@ func (db *_product) Add(product *database.Product) error {
 }
 
 // Get 获取 product
-func (db *_product) Get(productId string) (*database.Product, error) {
-	var product database.Product
+func (db *_product) Get(productId string) (*model.Product, error) {
+	var product model.Product
 	if tx := db.orm.Where("product_id = ?", productId).First(&product); tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -28,13 +29,13 @@ func (db *_product) Get(productId string) (*database.Product, error) {
 }
 
 // List 获取 product 列表
-func (db *_product) List(page database.Page) ([]database.Product, database.Page, error) {
-	var products []database.Product
-	if tx := db.orm.Model(&database.Product{}).Scopes(database.Paginate(&page)).Find(&products); tx.Error != nil {
+func (db *_product) List(page model.Page) ([]model.Product, model.Page, error) {
+	var products []model.Product
+	if tx := db.orm.Model(&model.Product{}).Scopes(database.Paginate(&page)).Find(&products); tx.Error != nil {
 		return nil, page, tx.Error
 	}
 	var total int64
-	if tx := db.orm.Model(&database.Product{}).Count(&total); tx.Error != nil {
+	if tx := db.orm.Model(&model.Product{}).Count(&total); tx.Error != nil {
 		return nil, page, tx.Error
 	}
 	page.Total = int(total)
@@ -43,7 +44,7 @@ func (db *_product) List(page database.Page) ([]database.Product, database.Page,
 }
 
 // Update 更新 product
-func (db *_product) Update(product *database.Product) error {
+func (db *_product) Update(product *model.Product) error {
 	if tx := db.orm.Model(product).Select("product_name").Updates(product); tx.Error != nil {
 		return tx.Error
 	}
@@ -52,7 +53,7 @@ func (db *_product) Update(product *database.Product) error {
 
 // Delete 删除指定ID产品
 func (db *_product) Delete(productId string) error {
-	if tx := db.orm.Delete(&database.Product{
+	if tx := db.orm.Delete(&model.Product{
 		ProductId: productId,
 	}); tx.Error != nil {
 		return tx.Error

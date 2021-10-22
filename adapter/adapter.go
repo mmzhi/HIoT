@@ -6,6 +6,12 @@ import (
 
 // 扩展功能
 
+// IBroker MQTT broker 接口
+type IBroker interface {
+	// Kick 剔除设备
+	Kick(productId string, deviceId string)
+}
+
 // IConnectAdapter 连接适配器接口
 type IConnectAdapter interface {
 	// OnClientConnected 客户端连接

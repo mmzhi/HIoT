@@ -1,6 +1,10 @@
 package database
 
-import "errors"
+import (
+	"errors"
+	"github.com/fhmq/hmq/model"
+	"gorm.io/gorm"
+)
 
 // 数据库功能，该插件为必选
 
@@ -14,16 +18,16 @@ type IDatabase interface {
 type IProduct interface {
 
 	// Add 添加产品
-	Add(product *Product) error
+	Add(product *model.Product) error
 
 	// Get 获取产品
-	Get(productId string) (*Product, error)
+	Get(productId string) (*model.Product, error)
 
 	// List 获取产品列表
-	List(Page) ([]Product, Page, error)
+	List(model.Page) ([]model.Product, model.Page, error)
 
 	// Update 更新产品
-	Update(product *Product) error
+	Update(product *model.Product) error
 
 	// Delete 删除指定ID产品
 	Delete(productId string) error
@@ -33,19 +37,19 @@ type IProduct interface {
 type IDevice interface {
 
 	// Add 添加设备
-	Add(device *Device) error
+	Add(device *model.Device) error
 
 	// Get 获取 Device
-	Get(productId string, deviceId string) (*Device, error)
+	Get(productId string, deviceId string) (*model.Device, error)
 
 	// GetSubdevice 获取指定网关对象的子设备
-	GetSubdevice(productId string, deviceId string, subProductId string, subDeviceId string) (*Device, error)
+	GetSubdevice(productId string, deviceId string, subProductId string, subDeviceId string) (*model.Device, error)
 
 	// List 获取 Device 列表
-	List(page Page) ([]Device, Page, error)
+	List(page model.Page) ([]model.Device, model.Page, error)
 
 	// Update 更新 Device
-	Update(device *Device) error
+	Update(device *model.Device) error
 
 	// Delete 删除指定ID设备
 	Delete(productId string, deviceId string) error
@@ -108,4 +112,21 @@ func InitDatabase(name string, dsn string, extend string) (err error) {
 	}
 	_database, err = builder.Build(dsn, extend)
 	return err
+}
+
+// Paginate 分页方法
+func Paginate(page *model.Page) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if page.Current <= 0 {
+			page.Current = 1
+		}
+		switch {
+		case page.Size > 10000:
+			page.Size = 10000
+		case page.Size <= 0:
+			page.Size = 10
+		}
+		offset := (page.Current - 1) * page.Size
+		return db.Offset(offset).Limit(page.Size)
+	}
 }

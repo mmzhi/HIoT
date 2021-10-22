@@ -5,13 +5,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/model"
 	"regexp"
 	"strings"
 )
 
 type Device struct {
-	database.Device
+	model.Device
 }
 
 // valid 验证密码是否正确
