@@ -3,6 +3,7 @@ package common
 import (
 	"github.com/fhmq/hmq/database"
 	"gorm.io/gorm"
+	"math"
 )
 
 type _device struct {
@@ -34,14 +35,20 @@ func (db *_device) GetSubdevice(productId string, deviceId string, subProductId 
 
 func (db *_device) List(page database.Page) ([]database.Device, database.Page, error) {
 	var devices []database.Device
-	//if tx := db.orm.Offset(page - 1*limit).Limit(limit).Find(&devices); tx.Error != nil {
-	//	return nil, tx.Error
-	//}
+	if tx := db.orm.Model(&database.Device{}).Scopes(database.Paginate(&page)).Find(&devices); tx.Error != nil {
+		return nil, page, tx.Error
+	}
+	var total int64
+	if tx := db.orm.Model(&database.Device{}).Count(&total); tx.Error != nil {
+		return nil, page, tx.Error
+	}
+	page.Total = int(total)
+	page.Pages = int(math.Ceil(float64(page.Total) / float64(page.Size)))
 	return devices, page, nil
 }
 
 func (db *_device) Update(device *database.Device) error {
-	if tx := db.orm.Save(device); tx.Error != nil {
+	if tx := db.orm.Model(device).Select("device_name").Updates(device); tx.Error != nil {
 		return tx.Error
 	}
 	return nil

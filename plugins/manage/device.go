@@ -84,8 +84,36 @@ func (ctr *DeviceController) add(c *gin.Context) {
 	c.JSON(http.StatusOK, success(nil))
 }
 
-func (ctr *DeviceController) update(c *gin.Context) {
+// DeviceUpdateRequest 	修改设备信息请求
+type DeviceUpdateRequest struct {
+	DeviceName *string `json:"deviceName" binding:"required"`
+}
 
+// update 更新设备信息
+func (ctr *DeviceController) update(c *gin.Context) {
+	var req DeviceUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		if i, ok := err.(validator.ValidationErrors); ok {
+			fmt.Println("Error" + i.Error())
+		}
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	err := ctr.database.Device().Update(&database.Device{
+		ProductId:  productId,
+		DeviceId:   deviceId,
+		DeviceName: *req.DeviceName,
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(nil))
 }
 
 func (ctr *DeviceController) get(c *gin.Context) {
