@@ -2,23 +2,14 @@
 
 ### 获取产品列表
 - **说明:** 获取产品列表
-- **URL:** `http://HOST:PORT/api/v1/product`
+- **URL:** `http://HOST:PORT/api/v1/product?pageCurrent=1&pageSize=10`
 - **方法:** `GET`
-- **请求报文:**
-```json
-{
-  "page": {
-    "current": 1,
-    "size": 10
-  }
-}
-```
 - **请求参数说明：**
 
 | 参数  | 必填  | 说明  |
 | ------------ | ------------ | ------------ |
-| page.current  | 选填  | 分页页码，从 1 开始  |
-| page.size  | 选填  | 分页数量，默认为20 |
+| pageCurrent  | 选填  | 分页页码，从 1 开始  |
+| pageSize  | 选填  | 分页数量，默认为20 |
 
 - **应答报文:**
 

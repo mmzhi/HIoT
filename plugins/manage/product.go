@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/segmentio/ksuid"
 	"net/http"
+	"strconv"
 )
 
 // ProductController 产品控制器
@@ -106,11 +107,6 @@ func (ctr *ProductController) update(c *gin.Context) {
 	c.JSON(http.StatusOK, success(nil))
 }
 
-// ProductListRequest 产品列表请求
-type ProductListRequest struct {
-	Page Page `json:"page"`
-}
-
 // ProductListItemResponse 产品列表子项应答
 type ProductListItemResponse struct {
 	ProductId   *string               `json:"productId"`
@@ -126,15 +122,38 @@ type ProductListResponse struct {
 
 // list 获取产品列表
 func (ctr *ProductController) list(c *gin.Context) {
-	var req ProductUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		if i, ok := err.(validator.ValidationErrors); ok {
-			fmt.Println("Error" + i.Error())
-		}
+
+	pageSize, _ := strconv.Atoi(c.Param("pageSize"))
+	pageCurrent, _ := strconv.Atoi(c.Param("pageCurrent"))
+
+	products, page, err := ctr.database.Product().List(database.Page{
+		Current: pageCurrent,
+		Size:    pageSize,
+	})
+	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return
 	}
 
+	var productsResp []ProductListItemResponse
+
+	for _, v := range products {
+		productsResp = append(productsResp, ProductListItemResponse{
+			ProductId:   &v.ProductId,
+			ProductType: &v.ProductType,
+			ProductName: &v.ProductName,
+		})
+	}
+
+	c.JSON(http.StatusOK, success(ProductListResponse{
+		List: productsResp,
+		Page: Page{
+			Current: page.Current,
+			Pages:   page.Pages,
+			Size:    page.Size,
+			Total:   page.Total,
+		},
+	}))
 }
 
 // get 获取指定产品信息
