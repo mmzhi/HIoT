@@ -6,22 +6,6 @@ import (
 
 // 扩展功能
 
-// AccessType acl type
-type AccessType int
-
-const (
-	AccessPublish   AccessType = 1
-	AccessSubscribe AccessType = 2
-)
-
-// IAuthAdapter 授权适配器接口
-type IAuthAdapter interface {
-	// OnClientAuthenticate 授权请求
-	OnClientAuthenticate(clientID, username, password string) bool
-	// OnClientCheckAcl ACL请求
-	OnClientCheckAcl(clientID, username, topic string, accessType AccessType) bool
-}
-
 // IConnectAdapter 连接适配器接口
 type IConnectAdapter interface {
 	// OnClientConnected 客户端连接
@@ -43,7 +27,6 @@ type IMessageAdapter interface {
 // IAdapter 适配器总接口
 type IAdapter interface {
 	IConnectAdapter
-	IAuthAdapter
 	IMessageAdapter
 }
 
@@ -55,13 +38,9 @@ type IHandler interface {
 // NewAdapter 新建适配器
 func NewAdapter(database database.IDatabase) (IAdapter, error) {
 	return struct {
-		IAuthAdapter
 		IConnectAdapter
 		IMessageAdapter
 	}{
-		IAuthAdapter: &authAdapter{
-			Database: database,
-		},
 		IConnectAdapter: &connectAdapter{},
 		IMessageAdapter: &messageAdapter{},
 	}, nil

@@ -46,7 +46,8 @@ type Broker struct {
 	topicsMgr   *topics.Manager
 	sessionMgr  *sessions.Manager
 
-	adapter adapter.IAdapter // 业务适配器
+	database database.IDatabase // 数据库接口
+	adapter  adapter.IAdapter   // 业务适配器
 
 	bridgeMQ bridge.BridgeMQ
 }
@@ -101,13 +102,13 @@ func NewBroker(config *Config) (*Broker, error) {
 		return nil, err
 	}
 
-	db, err := database.Database()
+	b.database, err = database.Database()
 	if err != nil {
 		log.Error("get database error", zap.Error(err))
 		return nil, err
 	}
 
-	b.adapter, err = adapter.NewAdapter(db)
+	b.adapter, err = adapter.NewAdapter(b.database)
 	if err != nil {
 		log.Error("new adapter error", zap.Error(err))
 		return nil, err
