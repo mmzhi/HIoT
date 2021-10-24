@@ -45,14 +45,20 @@ type IDevice interface {
 	// GetSubdevice 获取指定网关对象的子设备
 	GetSubdevice(productId string, deviceId string, subProductId string, subDeviceId string) (*model.Device, error)
 
+	// GetConfig 获取设备配置
+	GetConfig(productId string, deviceId string) (*string, error)
+
 	// List 获取 Device 列表
 	List(page model.Page, device *model.Device) ([]model.Device, model.Page, error)
 
 	// Update 更新 Device
 	Update(device *model.Device) error
 
-	// UpdateState 更新 Device 状态
+	// UpdateState 更新设备状态
 	UpdateState(productId string, deviceId string, state model.DeviceState) error
+
+	// UpdateConfig 更新设备配置
+	UpdateConfig(productId string, deviceId string, config *string) error
 
 	// Delete 删除指定ID设备
 	Delete(productId string, deviceId string) error

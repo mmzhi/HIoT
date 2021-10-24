@@ -32,6 +32,8 @@ func (ctr *DeviceController) Run() {
 		route.GET("/:productId/:deviceId", ctr.get)
 		route.GET("/:productId", ctr.list)
 		route.DELETE("/:productId/:deviceId", ctr.delete)
+		route.GET("/:productId/:deviceId/config", ctr.getConfig)
+		route.POST("/:productId/:deviceId/config", ctr.updateConfig)
 	}
 }
 
@@ -321,5 +323,55 @@ func (ctr *DeviceController) disable(c *gin.Context) {
 		}
 	}
 
+	c.JSON(http.StatusOK, success(nil))
+}
+
+// DeviceGetConfigResponse 获取设备配置应答
+type DeviceGetConfigResponse struct {
+	Config *string `json:"config"`
+}
+
+// getConfig 获取配置
+func (ctr *DeviceController) getConfig(c *gin.Context) {
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	config, err := ctr.database.Device().GetConfig(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(DeviceGetConfigResponse{
+		Config: config,
+	}))
+}
+
+// DeviceUpdateConfigRequest 设备配置更新请求
+type DeviceUpdateConfigRequest struct {
+	Config *string `json:"config"`
+}
+
+// updateConfig 更新配置
+func (ctr *DeviceController) updateConfig(c *gin.Context) {
+
+	var req DeviceUpdateConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		if i, ok := err.(validator.ValidationErrors); ok {
+			fmt.Println("Error" + i.Error())
+		}
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	err := ctr.database.Device().UpdateConfig(productId, deviceId, req.Config)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
 	c.JSON(http.StatusOK, success(nil))
 }
