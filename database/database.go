@@ -51,6 +51,9 @@ type IDevice interface {
 	// Update 更新 Device
 	Update(device *model.Device) error
 
+	// UpdateState 更新 Device 状态
+	UpdateState(productId string, deviceId string, state model.DeviceState) error
+
 	// Delete 删除指定ID设备
 	Delete(productId string, deviceId string) error
 }

@@ -25,10 +25,11 @@ const (
 type DeviceState int
 
 const (
-	InactiveState DeviceState = 0 // 未激活
-	OnlineState   DeviceState = 1 // 在线
-	OfflineState  DeviceState = 2 // 离线
-	DisabledState DeviceState = 3 // 禁用
+	InactiveState         DeviceState = 0 // 未激活
+	OnlineState           DeviceState = 1 // 在线
+	OfflineState          DeviceState = 2 // 离线
+	DisabledState         DeviceState = 3 // 禁用
+	InactiveDisabledState DeviceState = 4 // 未激活且禁用
 )
 
 // Product 产品的表结构声明

@@ -55,6 +55,18 @@ func (db *_device) Update(device *model.Device) error {
 	return nil
 }
 
+// UpdateState 更新 Device 状态
+func (db *_device) UpdateState(productId string, deviceId string, state model.DeviceState) error {
+	if tx := db.orm.Model(&model.Device{}).Select("state").Updates(&model.Device{
+		ProductId: productId,
+		DeviceId:  deviceId,
+		State:     state,
+	}); tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+
 func (db *_device) Delete(productId string, deviceId string) error {
 	if tx := db.orm.Where("product_id = ? AND device_id = ?", productId, deviceId).Delete(&model.Device{}); tx.Error != nil {
 		return tx.Error

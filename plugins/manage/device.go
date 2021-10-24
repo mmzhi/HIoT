@@ -26,6 +26,9 @@ func (ctr *DeviceController) Run() {
 	{
 		route.POST("/:productId", ctr.add)
 		route.POST("/:productId/:deviceId", ctr.update)
+		route.POST("/:productId/:deviceId/enable", ctr.enable)
+		route.POST("/:productId/:deviceId/disable", ctr.disable)
+		route.POST("/:productId/:deviceId", ctr.update)
 		route.GET("/:productId/:deviceId", ctr.get)
 		route.GET("/:productId", ctr.list)
 		route.DELETE("/:productId/:deviceId", ctr.delete)
@@ -256,6 +259,66 @@ func (ctr *DeviceController) delete(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return
+	}
+
+	c.JSON(http.StatusOK, success(nil))
+}
+
+// enable 启用设备
+func (ctr *DeviceController) enable(c *gin.Context) {
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	device, err := ctr.database.Device().Get(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	if device.State != model.DisabledState && device.State != model.InactiveDisabledState {
+		c.JSON(http.StatusBadRequest, fail(0, "State is not support"))
+		return
+	} else if device.State == model.DisabledState { // 禁用
+		if err := ctr.database.Device().UpdateState(productId, deviceId, model.OfflineState); err != nil {
+			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			return
+		}
+	} else { // 禁用且未激活
+		if err := ctr.database.Device().UpdateState(productId, deviceId, model.InactiveState); err != nil {
+			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, success(nil))
+}
+
+// disable 禁用设备
+func (ctr *DeviceController) disable(c *gin.Context) {
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	device, err := ctr.database.Device().Get(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	if device.State == model.DisabledState || device.State == model.InactiveDisabledState {
+		c.JSON(http.StatusBadRequest, fail(0, "State is not support"))
+		return
+	} else if device.State == model.InactiveState { // 未激活
+		if err := ctr.database.Device().UpdateState(productId, deviceId, model.InactiveDisabledState); err != nil {
+			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			return
+		}
+	} else { // 其余状态
+		if err := ctr.database.Device().UpdateState(productId, deviceId, model.DisabledState); err != nil {
+			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, success(nil))
