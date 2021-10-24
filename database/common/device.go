@@ -61,3 +61,11 @@ func (db *_device) Delete(productId string, deviceId string) error {
 	}
 	return nil
 }
+
+// DeleteByProductId 删除指定产品所有设备
+func (db *_device) DeleteByProductId(productId string) error {
+	if tx := db.orm.Where("product_id = ?", productId).Delete(&model.Device{}); tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
