@@ -34,9 +34,9 @@ func (db *_device) GetSubdevice(productId string, deviceId string, subProductId 
 	return &device, nil
 }
 
-func (db *_device) List(page model.Page) ([]model.Device, model.Page, error) {
+func (db *_device) List(page model.Page, device *model.Device) ([]model.Device, model.Page, error) {
 	var devices []model.Device
-	if tx := db.orm.Model(&model.Device{}).Scopes(database.Paginate(&page)).Find(&devices); tx.Error != nil {
+	if tx := db.orm.Model(&model.Device{}).Where("product_id = ?", device.ProductId).Scopes(database.Paginate(&page)).Find(&devices); tx.Error != nil {
 		return nil, page, tx.Error
 	}
 	var total int64
@@ -56,10 +56,7 @@ func (db *_device) Update(device *model.Device) error {
 }
 
 func (db *_device) Delete(productId string, deviceId string) error {
-	if tx := db.orm.Delete(&model.Device{
-		ProductId: productId,
-		DeviceId:  deviceId,
-	}); tx.Error != nil {
+	if tx := db.orm.Where("product_id = ? AND device_id = ?", productId, deviceId).Delete(&model.Device{}); tx.Error != nil {
 		return tx.Error
 	}
 	return nil

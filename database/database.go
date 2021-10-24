@@ -46,7 +46,7 @@ type IDevice interface {
 	GetSubdevice(productId string, deviceId string, subProductId string, subDeviceId string) (*model.Device, error)
 
 	// List 获取 Device 列表
-	List(page model.Page) ([]model.Device, model.Page, error)
+	List(page model.Page, device *model.Device) ([]model.Device, model.Page, error)
 
 	// Update 更新 Device
 	Update(device *model.Device) error

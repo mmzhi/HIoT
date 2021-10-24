@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"math/rand"
 	"net/http"
+	"strconv"
 )
 
 // DeviceController 设备控制器
@@ -169,10 +170,93 @@ func (ctr *DeviceController) get(c *gin.Context) {
 	}))
 }
 
-func (ctr *DeviceController) list(c *gin.Context) {
+// DeviceListItemResponse 获取设备信息应答
+type DeviceListItemResponse struct {
+	ProductId string `json:"productId"`
+	DeviceId  string `json:"deviceId"`
 
+	ProductType  model.ProductType `json:"productType"`
+	DeviceName   string            `json:"deviceName"`
+	DeviceSecret string            `json:"deviceSecret"`
+
+	FirmwareVersion *string           `json:"firmwareVersion"`
+	IpAddress       *string           `json:"ipAddress"`
+	State           model.DeviceState `json:"state"`
+
+	OnlineTime  *Datetime `json:"onlineTime"`
+	OfflineTime *Datetime `json:"offlineTime"`
+
+	CreatedAt Datetime `json:"createdAt"`
+	UpdatedAt Datetime `json:"updatedAt"`
 }
 
-func (ctr *DeviceController) delete(c *gin.Context) {
+type DeviceListResponse struct {
+	Page Page                     `json:"page"`
+	List []DeviceListItemResponse `json:"list"`
+}
 
+// list 设备列表
+func (ctr *DeviceController) list(c *gin.Context) {
+	pageSize, _ := strconv.Atoi(c.Param("pageSize"))
+	pageCurrent, _ := strconv.Atoi(c.Param("pageCurrent"))
+
+	var productId = c.Param("productId")
+	devices, page, err := ctr.database.Device().List(model.Page{
+		Current: pageCurrent,
+		Size:    pageSize,
+	}, &model.Device{
+		ProductId: productId,
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	var devicesResp []DeviceListItemResponse
+
+	for _, v := range devices {
+		devicesResp = append(devicesResp, DeviceListItemResponse{
+			ProductId: v.ProductId,
+			DeviceId:  v.DeviceId,
+
+			ProductType:  v.ProductType,
+			DeviceName:   v.DeviceName,
+			DeviceSecret: v.DeviceSecret,
+
+			FirmwareVersion: v.FirmwareVersion,
+			IpAddress:       v.IpAddress,
+
+			State: v.State,
+
+			OnlineTime:  PDatetime(v.OnlineTime),
+			OfflineTime: PDatetime(v.OfflineTime),
+
+			CreatedAt: Datetime{v.CreatedAt},
+			UpdatedAt: Datetime{v.UpdatedAt},
+		})
+	}
+
+	c.JSON(http.StatusOK, success(DeviceListResponse{
+		List: devicesResp,
+		Page: Page{
+			Current: page.Current,
+			Pages:   page.Pages,
+			Size:    page.Size,
+			Total:   page.Total,
+		},
+	}))
+}
+
+// delete 删除设备
+func (ctr *DeviceController) delete(c *gin.Context) {
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	err := ctr.database.Device().Delete(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(nil))
 }
