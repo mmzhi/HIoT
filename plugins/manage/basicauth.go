@@ -12,7 +12,7 @@ func (e *Engine) BasicAuth() gin.HandlerFunc {
 		auth, username, password := authorization(c.Request.Header.Get("Authorization"))
 		if !auth || username != e.config.Username || password != e.config.Password {
 			c.Header("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, fail(0, "Authorization Fail"))
 			return
 		}
 		c.Set(gin.AuthUserKey, username)
