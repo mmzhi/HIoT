@@ -63,6 +63,9 @@ type IDevice interface {
 	// UpdateGateway 更新网关
 	UpdateGateway(productId string, deviceId string, gatewayProductId *string, gatewayDeviceId *string) error
 
+	// UpdateSecret 更新密钥
+	UpdateSecret(productId string, deviceId string, deviceSecret string) error
+
 	// Delete 删除指定ID设备
 	Delete(productId string, deviceId string) error
 }

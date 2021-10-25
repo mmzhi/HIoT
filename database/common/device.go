@@ -101,6 +101,18 @@ func (db *_device) UpdateGateway(productId string, deviceId string, gatewayProdu
 	return nil
 }
 
+// UpdateSecret 更新密钥
+func (db *_device) UpdateSecret(productId string, deviceId string, deviceSecret string) error {
+	if tx := db.orm.Model(&model.Device{}).Select("device_secret").Updates(&model.Device{
+		ProductId:    productId,
+		DeviceId:     deviceId,
+		DeviceSecret: deviceSecret,
+	}); tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+
 // Delete 删除指定ID设备
 func (db *_device) Delete(productId string, deviceId string) error {
 	if tx := db.orm.Where("product_id = ? AND device_id = ?", productId, deviceId).Delete(&model.Device{}); tx.Error != nil {

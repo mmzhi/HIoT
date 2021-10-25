@@ -7,9 +7,12 @@ import (
 	"strings"
 )
 
+// 该文件负责授权处理
+
+// BasicAuth 授权方法
 func (e *Engine) BasicAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		auth, username, password := authorization(c.Request.Header.Get("Authorization"))
+		auth, username, password := decodeAuthorization(c.Request.Header.Get("Authorization"))
 		if !auth || username != e.config.Username || password != e.config.Password {
 			c.Header("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, fail(0, "Authorization Fail"))
@@ -19,7 +22,7 @@ func (e *Engine) BasicAuth() gin.HandlerFunc {
 	}
 }
 
-func authorization(encodeString string) (auth bool, username string, password string) {
+func decodeAuthorization(encodeString string) (auth bool, username string, password string) {
 	if !strings.HasPrefix(encodeString, "Basic ") {
 		return false, "", ""
 	}

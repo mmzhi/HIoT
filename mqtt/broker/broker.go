@@ -4,17 +4,17 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/fhmq/hmq/adapter"
+	config2 "github.com/fhmq/hmq/config"
 	"github.com/fhmq/hmq/database"
 	log "github.com/fhmq/hmq/logger"
+	sessions2 "github.com/fhmq/hmq/mqtt/broker/lib/sessions"
+	topics2 "github.com/fhmq/hmq/mqtt/broker/lib/topics"
 	"github.com/fhmq/hmq/plugins/bridge"
 	"github.com/fhmq/hmq/plugins/manage"
 	"net"
 	"net/http"
 	"sync"
 	"time"
-
-	"github.com/fhmq/hmq/broker/lib/sessions"
-	"github.com/fhmq/hmq/broker/lib/topics"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/fhmq/hmq/pool"
@@ -35,7 +35,7 @@ type Message struct {
 type Broker struct {
 	id          string
 	mu          sync.Mutex
-	config      *Config
+	config      *config2.Config
 	tlsConfig   *tls.Config
 	wpool       *pool.WorkerPool
 	clients     sync.Map
@@ -43,8 +43,8 @@ type Broker struct {
 	remotes     sync.Map
 	nodes       map[string]interface{}
 	clusterPool chan *Message
-	topicsMgr   *topics.Manager
-	sessionMgr  *sessions.Manager
+	topicsMgr   *topics2.Manager
+	sessionMgr  *sessions2.Manager
 
 	database database.IDatabase // 数据库接口
 	adapter  adapter.IAdapter   // 业务适配器
@@ -61,9 +61,9 @@ func newMessagePool() []chan *Message {
 	return pool
 }
 
-func NewBroker(config *Config) (*Broker, error) {
+func NewBroker(config *config2.Config) (*Broker, error) {
 	if config == nil {
-		config = DefaultConfig
+		config = config2.DefaultConfig
 	}
 
 	b := &Broker{
@@ -75,20 +75,20 @@ func NewBroker(config *Config) (*Broker, error) {
 	}
 
 	var err error
-	b.topicsMgr, err = topics.NewManager("mem")
+	b.topicsMgr, err = topics2.NewManager("mem")
 	if err != nil {
 		log.Error("new topic manager error", zap.Error(err))
 		return nil, err
 	}
 
-	b.sessionMgr, err = sessions.NewManager("mem")
+	b.sessionMgr, err = sessions2.NewManager("mem")
 	if err != nil {
 		log.Error("new session manager error", zap.Error(err))
 		return nil, err
 	}
 
 	if b.config.TlsPort != "" {
-		tlsconfig, err := NewTLSConfig(b.config.TlsInfo)
+		tlsconfig, err := config2.NewTLSConfig(b.config.TlsInfo)
 		if err != nil {
 			log.Error("new tlsConfig error", zap.Error(err))
 			return nil, err
@@ -148,7 +148,7 @@ func (b *Broker) Start() {
 			Password: b.config.Manage.Password,
 		})
 		if err != nil {
-			log.Error("new manage fail", zap.Error(err))
+			log.Fatal("new manage fail", zap.Error(err))
 			return
 		}
 		go m.Run()

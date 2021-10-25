@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	sessions2 "github.com/fhmq/hmq/mqtt/broker/lib/sessions"
+	topics2 "github.com/fhmq/hmq/mqtt/broker/lib/topics"
 	"math/rand"
 	"net"
 	"reflect"
@@ -15,8 +17,6 @@ import (
 
 	"github.com/eapache/queue"
 
-	"github.com/fhmq/hmq/broker/lib/sessions"
-	"github.com/fhmq/hmq/broker/lib/topics"
 	log "github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/plugins/bridge"
 	"golang.org/x/net/websocket"
@@ -65,10 +65,10 @@ type client struct {
 	status         int
 	ctx            context.Context
 	cancelFunc     context.CancelFunc
-	session        *sessions.Session
+	session        *sessions2.Session
 	subMap         map[string]*subscription
 	subMapMu       sync.RWMutex
-	topicsMgr      *topics.Manager
+	topicsMgr      *topics2.Manager
 	subs           []interface{}
 	qoss           []byte
 	rmsgs          []*packets.PublishPacket

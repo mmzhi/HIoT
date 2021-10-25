@@ -1,4 +1,4 @@
-package broker
+package config
 
 import (
 	"crypto/tls"
@@ -14,21 +14,28 @@ import (
 )
 
 type Config struct {
-	WorkerNum int       `json:"workerNum"`
-	Host      string    `json:"host"`
-	Port      string    `json:"port"`
-	Cluster   RouteInfo `json:"cluster"`
-	Router    string    `json:"router"`
-	TlsHost   string    `json:"tlsHost"`
-	TlsPort   string    `json:"tlsPort"`
-	WsPath    string    `json:"wsPath"`
-	WsPort    string    `json:"wsPort"`
-	WsTLS     bool      `json:"wsTLS"`
-	TlsInfo   TLSInfo   `json:"tlsInfo"`
-	Debug     bool      `json:"debug"`
-	Plugin    Plugins   `json:"plugins"`
-	Database  Database  `json:"database"`
-	Manage    Manage    `json:"manage"`
+	WorkerNum int `json:"workerNum"`
+
+	Host string `json:"host"`
+	Port string `json:"port"`
+
+	Cluster RouteInfo `json:"cluster"`
+	Router  string    `json:"router"`
+
+	TlsHost string  `json:"tlsHost"`
+	TlsPort string  `json:"tlsPort"`
+	TlsInfo TLSInfo `json:"tlsInfo"`
+
+	WsPath string `json:"wsPath"`
+	WsPort string `json:"wsPort"`
+	WsTLS  bool   `json:"wsTLS"`
+
+	Debug bool `json:"debug"`
+
+	Plugin Plugins `json:"plugins"`
+
+	Database Database `json:"database"`
+	Manage   Manage   `json:"manage"`
 }
 
 type Database struct {
@@ -65,8 +72,8 @@ var DefaultConfig = &Config{
 	Port:      "1883",
 }
 
-// ConfigureConfig 配置配置文件
-func ConfigureConfig() (*Config, error) {
+// Configure 配置配置文件
+func Configure() (*Config, error) {
 
 	// 从 flag 获取配置
 	config, err := LoadFlag(DefaultConfig)

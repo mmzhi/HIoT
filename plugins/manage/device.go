@@ -21,14 +21,22 @@ func (e *Engine) ConfigDeviceController(route *gin.RouterGroup) *Engine {
 	route = route.Group("/device")
 	{
 		route.POST("/:productId", ctr.add)
+		route.GET("/:productId", ctr.list)
+		route.GET("/:productId/:deviceId", ctr.get)
 		route.POST("/:productId/:deviceId", ctr.update)
+		route.DELETE("/:productId/:deviceId", ctr.delete)
+
 		route.POST("/:productId/:deviceId/enable", ctr.enable)
 		route.POST("/:productId/:deviceId/disable", ctr.disable)
-		route.GET("/:productId/:deviceId", ctr.get)
-		route.GET("/:productId", ctr.list)
-		route.DELETE("/:productId/:deviceId", ctr.delete)
+
 		route.GET("/:productId/:deviceId/config", ctr.getConfig)
 		route.POST("/:productId/:deviceId/config", ctr.updateConfig)
+
+		route.GET("/:productId/:deviceId/topology", ctr.getTopology)
+		route.POST("/:productId/:deviceId/topology", ctr.updateTopology)
+		route.DELETE("/:productId/:deviceId/topology", ctr.removeTopology)
+
+		route.POST("/:productId/:deviceId/reset", ctr.reset)
 	}
 	e.deviceController = ctr
 	return e
@@ -42,7 +50,7 @@ type DeviceAddRequest struct {
 
 // generateSecret 生成随机密钥
 func (ctr *DeviceController) generateSecret() string {
-	var letters = []rune("0123456789ABCDEF")
+	var letters = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	b := make([]rune, 8)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
@@ -450,6 +458,20 @@ func (ctr *DeviceController) removeTopology(c *gin.Context) {
 	var deviceId = c.Param("deviceId")
 
 	err := ctr.database.Device().UpdateGateway(productId, deviceId, nil, nil)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, success(nil))
+}
+
+// reset 设备密钥重置
+func (ctr *DeviceController) reset(c *gin.Context) {
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	err := ctr.database.Device().UpdateSecret(productId, deviceId, ctr.generateSecret())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return

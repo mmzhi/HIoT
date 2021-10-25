@@ -22,11 +22,6 @@ var (
 
 // CheckTopicAuth 检测连接是否授权
 func (b *Broker) CheckTopicAuth(clientID, username, topic string, action AccessType) bool {
-	//if b.adapter != nil {
-	//
-	//
-	//	return b.adapter.OnClientCheckAcl(clientID, username, topic, action)
-	//}
 
 	if strings.HasPrefix(topic, "$SYS/broker/connection/clients/") {
 		return true

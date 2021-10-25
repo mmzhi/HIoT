@@ -1,24 +1,26 @@
 package main
 
 import (
+	"github.com/fhmq/hmq/config"
+	"github.com/fhmq/hmq/mqtt/broker"
 	"log"
 	"os"
 	"os/signal"
 	"runtime"
 
-	"github.com/fhmq/hmq/broker"
 	_ "github.com/fhmq/hmq/database/mysql"
 	_ "github.com/fhmq/hmq/database/sqlite"
 )
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	config, err := broker.ConfigureConfig()
+
+	cfg, err := config.Configure()
 	if err != nil {
 		log.Fatal("configure broker config error: ", err)
 	}
 
-	b, err := broker.NewBroker(config)
+	b, err := broker.NewBroker(cfg)
 	if err != nil {
 		log.Fatal("New Broker error: ", err)
 	}
