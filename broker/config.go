@@ -38,7 +38,9 @@ type Database struct {
 }
 
 type Manage struct {
-	Port int `json:"port"` // 管理用的HTTP端口
+	Port     int    `json:"port"`     // 管理用的HTTP端口
+	Username string `json:"username"` // 用户名
+	Password string `json:"password"` // 密码
 }
 
 type Plugins struct {
@@ -192,6 +194,12 @@ func (config *Config) check() error {
 			config.TlsHost = "0.0.0.0"
 		}
 	}
+
+	if config.Manage.Username == "" || config.Manage.Password == "" {
+		config.Manage.Username = "admin"
+		config.Manage.Password = "public"
+	}
+
 	return nil
 }
 

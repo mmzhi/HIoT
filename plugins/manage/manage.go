@@ -7,7 +7,9 @@ import (
 )
 
 type Config struct {
-	Port int // 端口
+	Port     int    // 端口
+	Username string // 用户名
+	Password string // 密码
 }
 
 // IManage HTTP接口管理

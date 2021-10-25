@@ -43,6 +43,9 @@ type Engine struct {
 	config   *Config            // 配置
 	database database.IDatabase // 数据库功能
 	handler  adapter.IHandler   // broker扩展方法
+
+	productController ProductController // 产品控制器
+	deviceController  DeviceController  // 设备控制器
 }
 
 // Run 运行
@@ -52,8 +55,10 @@ func (e *Engine) Run() {
 	e.Engine = gin.New()
 	e.Engine.Use(RecoveryWithLogger())
 
-	NewProductController(e).Run()
-	NewDeviceController(e).Run()
+	authorized := e.Engine.Group("/api/v1", e.BasicAuth())
+
+	e.ConfigProductController(authorized).
+		ConfigDeviceController(authorized)
 
 	err := e.Engine.Run(fmt.Sprintf("0.0.0.0:%d", e.config.Port))
 

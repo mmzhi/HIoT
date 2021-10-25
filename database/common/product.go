@@ -53,15 +53,18 @@ func (db *_product) Update(product *model.Product) error {
 
 // Delete 删除指定ID产品
 func (db *_product) Delete(productId string) error {
-
 	if tx := db.orm.Transaction(func(tx *gorm.DB) error {
+		// 先删除设备
+		// TODO 删除设备又Device管理
+		if tx := tx.Where("product_id = ?", productId).
+			Delete(&model.Device{}); tx.Error != nil {
+			return tx.Error
+		}
+
+		// 再删除产品
 		if tx := tx.Delete(&model.Product{
 			ProductId: productId,
 		}); tx.Error != nil {
-			return tx.Error
-		}
-		if tx := tx.Where("product_id = ?", productId).
-			Delete(&model.Device{}); tx.Error != nil {
 			return tx.Error
 		}
 		return nil

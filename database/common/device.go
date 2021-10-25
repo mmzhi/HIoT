@@ -88,6 +88,19 @@ func (db *_device) UpdateConfig(productId string, deviceId string, config *strin
 	return nil
 }
 
+// UpdateGateway 更新网关
+func (db *_device) UpdateGateway(productId string, deviceId string, gatewayProductId *string, gatewayDeviceId *string) error {
+	if tx := db.orm.Model(&model.Device{}).Select("gateway_product_id", "gateway_device_id").Updates(&model.Device{
+		ProductId:        productId,
+		DeviceId:         deviceId,
+		GatewayProductId: gatewayProductId,
+		GatewayDeviceId:  gatewayDeviceId,
+	}); tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+
 // Delete 删除指定ID设备
 func (db *_device) Delete(productId string, deviceId string) error {
 	if tx := db.orm.Where("product_id = ? AND device_id = ?", productId, deviceId).Delete(&model.Device{}); tx.Error != nil {

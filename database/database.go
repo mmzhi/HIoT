@@ -60,6 +60,9 @@ type IDevice interface {
 	// UpdateConfig 更新设备配置
 	UpdateConfig(productId string, deviceId string, config *string) error
 
+	// UpdateGateway 更新网关
+	UpdateGateway(productId string, deviceId string, gatewayProductId *string, gatewayDeviceId *string) error
+
 	// Delete 删除指定ID设备
 	Delete(productId string, deviceId string) error
 }
@@ -93,11 +96,6 @@ func Register(name string, i IBuilder) error {
 	providers[name] = i
 
 	return nil
-}
-
-// UnRegister 反注册
-func UnRegister(name string) {
-	delete(providers, name)
 }
 
 var _database IDatabase

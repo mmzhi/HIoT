@@ -16,9 +16,19 @@ type ProductController struct {
 	*Engine
 }
 
-// NewProductController 新建ProductController
-func NewProductController(e *Engine) IManage {
-	return &ProductController{e}
+// ConfigProductController 新建ProductController
+func (e *Engine) ConfigProductController(route *gin.RouterGroup) *Engine {
+	ctr := ProductController{e}
+	route = route.Group("/product")
+	{
+		route.POST("/", ctr.add)
+		route.POST("/:productId", ctr.update)
+		route.GET("/:productId", ctr.get)
+		route.GET("/", ctr.list)
+		route.DELETE("/:productId", ctr.delete)
+	}
+	e.productController = ctr
+	return e
 }
 
 // Run 运行产品Controller

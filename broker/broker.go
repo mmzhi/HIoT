@@ -143,7 +143,9 @@ func (b *Broker) Start() {
 	// HTTP管理接口
 	{
 		m, err := manage.NewManage(&manage.Config{
-			Port: b.config.Manage.Port,
+			Port:     b.config.Manage.Port,
+			Username: b.config.Manage.Username,
+			Password: b.config.Manage.Password,
 		})
 		if err != nil {
 			log.Error("new manage fail", zap.Error(err))

@@ -15,26 +15,23 @@ type DeviceController struct {
 	*Engine
 }
 
-// NewDeviceController 新建DeviceController
-func NewDeviceController(e *Engine) IManage {
-	return &DeviceController{e}
-}
-
-// Run 运行产品Controller
-func (ctr *DeviceController) Run() {
-	route := ctr.Group("/api/v1/device")
+// ConfigDeviceController 新建DeviceController
+func (e *Engine) ConfigDeviceController(route *gin.RouterGroup) *Engine {
+	ctr := DeviceController{e}
+	route = route.Group("/device")
 	{
 		route.POST("/:productId", ctr.add)
 		route.POST("/:productId/:deviceId", ctr.update)
 		route.POST("/:productId/:deviceId/enable", ctr.enable)
 		route.POST("/:productId/:deviceId/disable", ctr.disable)
-		route.POST("/:productId/:deviceId", ctr.update)
 		route.GET("/:productId/:deviceId", ctr.get)
 		route.GET("/:productId", ctr.list)
 		route.DELETE("/:productId/:deviceId", ctr.delete)
 		route.GET("/:productId/:deviceId/config", ctr.getConfig)
 		route.POST("/:productId/:deviceId/config", ctr.updateConfig)
 	}
+	e.deviceController = ctr
+	return e
 }
 
 // DeviceAddRequest 添加设备请求
@@ -369,6 +366,90 @@ func (ctr *DeviceController) updateConfig(c *gin.Context) {
 	var deviceId = c.Param("deviceId")
 
 	err := ctr.database.Device().UpdateConfig(productId, deviceId, req.Config)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, success(nil))
+}
+
+// DeviceGetTopologyResponse 获取子设备拓扑信息
+type DeviceGetTopologyResponse struct {
+	GatewayProductId *string `json:"gatewayProductId"`
+	GatewayDeviceId  *string `json:"gatewayDeviceId"`
+}
+
+// getTopology 获取子设备拓扑信息
+func (ctr *DeviceController) getTopology(c *gin.Context) {
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	device, err := ctr.database.Device().Get(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, success(DeviceGetTopologyResponse{
+		GatewayProductId: device.GatewayProductId,
+		GatewayDeviceId:  device.GatewayDeviceId,
+	}))
+}
+
+// DeviceUpdateTopologyRequest 子设备拓扑信息更新请求
+type DeviceUpdateTopologyRequest struct {
+	GatewayProductId *string `json:"gatewayProductId"`
+	GatewayDeviceId  *string `json:"gatewayDeviceId"`
+}
+
+// updateTopology 子设备拓扑信息更新
+func (ctr *DeviceController) updateTopology(c *gin.Context) {
+
+	var req DeviceUpdateTopologyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		if i, ok := err.(validator.ValidationErrors); ok {
+			fmt.Println("Error" + i.Error())
+		}
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	subDevice, err := ctr.database.Device().Get(productId, deviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	} else if subDevice.ProductType != model.SubDeviceType {
+		c.JSON(http.StatusBadRequest, fail(0, "not a sub device"))
+		return
+	}
+
+	// TODO 下线子设备
+
+	_, err = ctr.database.Device().Get(*req.GatewayProductId, *req.GatewayDeviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+
+	err = ctr.database.Device().UpdateGateway(productId, deviceId, req.GatewayProductId, req.GatewayDeviceId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, success(nil))
+}
+
+// removeTopology 子设备拓扑信息移除
+func (ctr *DeviceController) removeTopology(c *gin.Context) {
+
+	var productId = c.Param("productId")
+	var deviceId = c.Param("deviceId")
+
+	err := ctr.database.Device().UpdateGateway(productId, deviceId, nil, nil)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return
