@@ -89,12 +89,6 @@ func Configure() (*Config, error) {
 
 	config.Plugin.Bridge = bridge.NewBridgeMQ("")
 
-	if config.Debug {
-		logger.ConfigLogger(logger.Config{
-			Debug: true,
-		})
-	}
-
 	// 检查配置是否正确
 	if err := config.check(); err != nil {
 		return nil, err

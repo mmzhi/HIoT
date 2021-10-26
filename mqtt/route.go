@@ -80,24 +80,25 @@ func match(route []string, topic []string) bool {
 
 // router 路由管理
 type router struct {
+	*mqtt
 	sync.RWMutex
 	routes []route
 }
 
-// Router 初始化路由
-func Router() *router {
+// newRouter 初始化路由
+func newRouter(m *mqtt) *router {
 	router := &router{
-		routes: []route{},
+		mqtt: m,
+		routes: []route{
+			{"sys/+/+/config/get", nil},
+			{"sys/+/+/config/get", nil},
+		},
 	}
-
-	//router.addRoute("sys/+/+/config/get", "")
-	//router.addRoute("sys/+/+/config/get", "")
-
 	return router
 }
 
-// OnMessagePublish 处理MQTT的消息
-func (r *router) OnMessagePublish(clientID, username, topic string, data []byte) {
+// HandleMessage 处理MQTT的消息
+func (r *router) HandleMessage(clientID, topic string, data []byte) {
 	r.RLock()
 	for _, e := range r.routes {
 		if e.match(topic) {

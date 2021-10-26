@@ -7,13 +7,13 @@ type Things interface {
 	// OnClientCheckAcl 客户端订阅发送行为是否授权
 	OnClientCheckAcl(clientID, username, topic string, action AccessType) bool
 	// OnClientConnected 客户端连接
-	OnClientConnected(clientID, username, ipaddress string)
+	OnClientConnected(clientID, ipaddress string)
 	// OnClientDisconnected 客户端断开连接
-	OnClientDisconnected(clientID, username string)
+	OnClientDisconnected(clientID string)
 	// OnClientSubscribe 客户端订阅Topic
-	OnClientSubscribe(clientID, username, topic string)
+	OnClientSubscribe(clientID, topic string)
 	// OnClientUnsubscribe 客户端取消订阅Topic
-	OnClientUnsubscribe(clientID, username, topic string)
+	OnClientUnsubscribe(clientID, topic string)
 	// OnMessagePublish 客户端发布消息
-	OnMessagePublish(clientID, username, topic string, data []byte)
+	OnMessagePublish(clientID, topic string, data []byte)
 }

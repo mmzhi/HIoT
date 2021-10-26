@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/fhmq/hmq/config"
 	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/mqtt"
 	"go.uber.org/zap"
-	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -20,24 +20,31 @@ func main() {
 	// 初始化 配置
 	cfg, err := config.Configure()
 	if err != nil {
-		log.Fatal("configure broker config error: ", err)
+		logger.Fatal("configure broker config error: ", zap.Error(err))
+	}
+
+	// 配置日志
+	if cfg.Debug {
+		logger.ConfigLogger(logger.Config{
+			Debug: true,
+		})
 	}
 
 	// 初始化 数据库
 	err = database.InitDatabase(cfg.Database.Type, cfg.Database.Dsn, cfg.Database.Extend)
 	if err != nil {
-		log.Fatal("init database error", zap.Error(err))
+		logger.Fatal("init database error", zap.Error(err))
 	}
 
 	// 初始化 MQTT
 	m, err := mqtt.NewMqtt(cfg)
 	if err != nil {
-		log.Fatal("New MQTT Broker error: ", err)
+		logger.Fatal("New MQTT Broker error: ", zap.Error(err))
 	}
 	m.Start()
 
 	s := waitForSignal()
-	log.Println("signal received, broker closed.", s)
+	logger.Infof("signal received, broker closed. %s", s)
 }
 
 func waitForSignal() os.Signal {

@@ -10,6 +10,7 @@ import (
 
 // IDatabase 数据库接口
 type IDatabase interface {
+	Orm() *gorm.DB
 	Product() IProduct
 	Device() IDevice
 }

@@ -1,5 +1,5 @@
 package mqtt
 
-func (m *mqtt) OnMessagePublish(clientID, username, topic string, data []byte) {
-
+func (m *mqtt) OnMessagePublish(clientID, topic string, data []byte) {
+	m.router.HandleMessage(clientID, topic, data)
 }

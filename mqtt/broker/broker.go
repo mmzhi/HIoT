@@ -375,7 +375,7 @@ func (b *Broker) handleConnection(typ int, conn net.Conn) {
 			ipaddress = addr.IP.String()
 		}
 		// 连接成功调用
-		b.things.OnClientConnected(msg.ClientIdentifier, msg.Username, ipaddress)
+		b.things.OnClientConnected(msg.ClientIdentifier, ipaddress)
 
 		b.OnlineOfflineNotification(cid, true)
 		{

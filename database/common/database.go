@@ -15,14 +15,20 @@ func CreateDatabase(orm *gorm.DB) (database.IDatabase, error) {
 		return nil, err
 	}
 	return &_db{
+		DB:      orm,
 		product: &_product{orm},
 		device:  &_device{orm},
 	}, nil
 }
 
 type _db struct {
+	*gorm.DB
 	product database.IProduct
 	device  database.IDevice
+}
+
+func (db *_db) Orm() *gorm.DB {
+	return db.DB
 }
 
 func (db *_db) Product() database.IProduct {

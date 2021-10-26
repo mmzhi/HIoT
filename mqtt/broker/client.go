@@ -417,7 +417,7 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 	}
 
 	// 发消息处理
-	c.broker.things.OnMessagePublish(c.info.clientID, c.info.username, topic, packet.Payload)
+	c.broker.things.OnMessagePublish(c.info.clientID, topic, packet.Payload)
 
 	// publish kafka
 	c.broker.Publish(&bridge.Elements{
@@ -550,7 +550,7 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 		}
 
 		// 订阅处理
-		b.things.OnClientSubscribe(c.info.clientID, c.info.username, topic)
+		b.things.OnClientSubscribe(c.info.clientID, topic)
 
 		b.Publish(&bridge.Elements{
 			ClientID:  c.info.clientID,
@@ -751,7 +751,7 @@ func (c *client) processClientUnSubscribe(packet *packets.UnsubscribePacket) {
 	for _, topic := range unSubTopics {
 
 		// 取消订阅处理
-		b.things.OnClientUnsubscribe(c.info.clientID, c.info.username, topic)
+		b.things.OnClientUnsubscribe(c.info.clientID, topic)
 
 		{
 			//publish kafka
@@ -815,7 +815,7 @@ func (c *client) Close() {
 	b := c.broker
 
 	// 断开连接的通知
-	b.things.OnClientDisconnected(c.info.clientID, c.info.username)
+	b.things.OnClientDisconnected(c.info.clientID)
 
 	b.Publish(&bridge.Elements{
 		ClientID:  c.info.clientID,
