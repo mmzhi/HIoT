@@ -417,7 +417,7 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 	}
 
 	// 发消息处理
-	c.broker.adapter.OnMessagePublish(c.info.clientID, c.info.username, topic, packet.Payload)
+	c.broker.things.OnMessagePublish(c.info.clientID, c.info.username, topic, packet.Payload)
 
 	// publish kafka
 	c.broker.Publish(&bridge.Elements{
@@ -550,7 +550,7 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 		}
 
 		// 订阅处理
-		b.adapter.OnClientSubscribe(c.info.clientID, c.info.username, topic)
+		b.things.OnClientSubscribe(c.info.clientID, c.info.username, topic)
 
 		b.Publish(&bridge.Elements{
 			ClientID:  c.info.clientID,
@@ -751,7 +751,7 @@ func (c *client) processClientUnSubscribe(packet *packets.UnsubscribePacket) {
 	for _, topic := range unSubTopics {
 
 		// 取消订阅处理
-		b.adapter.OnClientUnsubscribe(c.info.clientID, c.info.username, topic)
+		b.things.OnClientUnsubscribe(c.info.clientID, c.info.username, topic)
 
 		{
 			//publish kafka
@@ -815,7 +815,7 @@ func (c *client) Close() {
 	b := c.broker
 
 	// 断开连接的通知
-	b.adapter.OnClientDisconnected(c.info.clientID, c.info.username)
+	b.things.OnClientDisconnected(c.info.clientID, c.info.username)
 
 	b.Publish(&bridge.Elements{
 		ClientID:  c.info.clientID,
@@ -949,4 +949,15 @@ func (c *client) pubRel(packetId uint16) error {
 		return errors.New("RC_PACKET_IDENTIFIER_NOT_FOUND")
 	}
 	return nil
+}
+
+// Kick 剔除客户端
+func (b *Broker) Kick(clientId string) {
+	cli, ok := b.clients.Load(clientId)
+	if ok {
+		conn, success := cli.(*client)
+		if success {
+			conn.Close()
+		}
+	}
 }

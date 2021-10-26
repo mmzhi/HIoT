@@ -1,4 +1,4 @@
-package broker
+package mqtt
 
 import (
 	"crypto/hmac"

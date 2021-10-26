@@ -104,11 +104,8 @@ func Register(name string, i IBuilder) error {
 var _database IDatabase
 
 // Database 获取数据库
-func Database() (IDatabase, error) {
-	if _database == nil {
-		return nil, errors.New("database is not initialization")
-	}
-	return _database, nil
+func Database() IDatabase {
+	return _database
 }
 
 // InitDatabase 新建数据库对象

@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/fhmq/hmq/config"
-	"github.com/fhmq/hmq/mqtt/broker"
+	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/mqtt"
+	"go.uber.org/zap"
 	"log"
 	"os"
 	"os/signal"
@@ -15,16 +17,24 @@ import (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	// 初始化 配置
 	cfg, err := config.Configure()
 	if err != nil {
 		log.Fatal("configure broker config error: ", err)
 	}
 
-	b, err := broker.NewBroker(cfg)
+	// 初始化 数据库
+	err = database.InitDatabase(cfg.Database.Type, cfg.Database.Dsn, cfg.Database.Extend)
 	if err != nil {
-		log.Fatal("New Broker error: ", err)
+		log.Fatal("init database error", zap.Error(err))
 	}
-	b.Start()
+
+	// 初始化 MQTT
+	m, err := mqtt.NewMqtt(cfg)
+	if err != nil {
+		log.Fatal("New MQTT Broker error: ", err)
+	}
+	m.Start()
 
 	s := waitForSignal()
 	log.Println("signal received, broker closed.", s)

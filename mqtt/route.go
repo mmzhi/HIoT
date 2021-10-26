@@ -1,8 +1,8 @@
 package mqtt
 
+// 该文件实现类似mqtt.route中的功能
+
 import (
-	"container/list"
-	"github.com/eclipse/paho.mqtt.golang/packets"
 	"strings"
 	"sync"
 )
@@ -18,20 +18,40 @@ import (
 // 4、获取子设备配置信息		设备调用				sys/{productId}/{deviceId}/subdevice/config/get
 //
 
+type Message interface {
+	ClientID() string
+	Topic() string
+	Payload() []byte
+}
+
 type message struct {
 	clientID string
 	topic    string
 	payload  []byte
 }
 
-type MessageHandler func(message message) message
+func (m *message) ClientID() string {
+	return m.clientID
+}
 
-type mqttRoute struct {
+func (m *message) Topic() string {
+	return m.topic
+}
+
+func (m *message) Payload() []byte {
+	return m.payload
+}
+
+type MessageHandler func(message Message) (Message, error)
+
+// route 路由
+type route struct {
 	topic    string
 	callback MessageHandler
 }
 
-func (r *mqttRoute) match(topic string) bool {
+// match 是否和匹配
+func (r *route) match(topic string) bool {
 	return r.topic == topic || routeIncludesTopic(r.topic, topic)
 }
 
@@ -58,13 +78,17 @@ func match(route []string, topic []string) bool {
 	return false
 }
 
-type mqttRouter struct {
+// router 路由管理
+type router struct {
 	sync.RWMutex
-	routes *list.List
+	routes []route
 }
 
-func newRouter() *mqttRouter {
-	router := &mqttRouter{routes: list.New()}
+// Router 初始化路由
+func Router() *router {
+	router := &router{
+		routes: []route{},
+	}
 
 	//router.addRoute("sys/+/+/config/get", "")
 	//router.addRoute("sys/+/+/config/get", "")
@@ -72,26 +96,17 @@ func newRouter() *mqttRouter {
 	return router
 }
 
-func (r *mqttRouter) addRoute(topic string, callback MessageHandler) {
-	r.Lock()
-	defer r.Unlock()
-	for e := r.routes.Front(); e != nil; e = e.Next() {
-		if e.Value.(*mqttRoute).topic == topic {
-			r := e.Value.(*mqttRoute)
-			r.callback = callback
-			return
-		}
-	}
-	r.routes.PushBack(&mqttRoute{topic: topic, callback: callback})
-}
-
-func (r *mqttRouter) matchAndDispatch(message *packets.PublishPacket) {
+// OnMessagePublish 处理MQTT的消息
+func (r *router) OnMessagePublish(clientID, username, topic string, data []byte) {
 	r.RLock()
-	for e := r.routes.Front(); e != nil; e = e.Next() {
-		if e.Value.(*mqttRoute).match(message.TopicName) {
-			//hd := e.Value.(*mqttRoute).callback
+	for _, e := range r.routes {
+		if e.match(topic) {
 			go func() {
-				//hd(message)
+				e.callback(&message{
+					clientID: clientID,
+					topic:    topic,
+					payload:  data,
+				})
 			}()
 		}
 	}

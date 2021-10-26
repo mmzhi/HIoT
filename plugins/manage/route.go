@@ -2,8 +2,6 @@ package manage
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/adapter"
-	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -40,9 +38,8 @@ import (
 // Engine HTTP对象
 type Engine struct {
 	*gin.Engine
-	config   *Config            // 配置
-	database database.IDatabase // 数据库功能
-	handler  adapter.IHandler   // broker扩展方法
+
+	config *Config // 配置
 
 	productController ProductController // 产品控制器
 	deviceController  DeviceController  // 设备控制器

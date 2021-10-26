@@ -2,6 +2,7 @@ package manage
 
 import (
 	"fmt"
+	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/model"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -72,7 +73,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 		product.ProductId = *req.ProductId
 	}
 
-	err := ctr.database.Product().Add(&product)
+	err := database.Database().Product().Add(&product)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return
@@ -99,7 +100,7 @@ func (ctr *ProductController) update(c *gin.Context) {
 
 	var productId = c.Param("productId")
 
-	err := ctr.database.Product().Update(&model.Product{
+	err := database.Database().Product().Update(&model.Product{
 		ProductId:   productId,
 		ProductName: *req.ProductName,
 	})
@@ -130,7 +131,7 @@ func (ctr *ProductController) list(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.Param("pageSize"))
 	pageCurrent, _ := strconv.Atoi(c.Param("pageCurrent"))
 
-	products, page, err := ctr.database.Product().List(model.Page{
+	products, page, err := database.Database().Product().List(model.Page{
 		Current: pageCurrent,
 		Size:    pageSize,
 	})
@@ -171,7 +172,7 @@ type ProductGetResponse struct {
 func (ctr *ProductController) get(c *gin.Context) {
 	var productId = c.Param("productId")
 
-	product, err := ctr.database.Product().Get(productId)
+	product, err := database.Database().Product().Get(productId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return
@@ -188,7 +189,7 @@ func (ctr *ProductController) get(c *gin.Context) {
 func (ctr *ProductController) delete(c *gin.Context) {
 	var productId = c.Param("productId")
 
-	err := ctr.database.Product().Delete(productId)
+	err := database.Database().Product().Delete(productId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
 		return

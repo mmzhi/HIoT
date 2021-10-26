@@ -3,12 +3,10 @@ package broker
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/fhmq/hmq/adapter"
-	config2 "github.com/fhmq/hmq/config"
-	"github.com/fhmq/hmq/database"
+	"github.com/fhmq/hmq/config"
 	log "github.com/fhmq/hmq/logger"
-	sessions2 "github.com/fhmq/hmq/mqtt/broker/lib/sessions"
-	topics2 "github.com/fhmq/hmq/mqtt/broker/lib/topics"
+	"github.com/fhmq/hmq/mqtt/broker/lib/sessions"
+	"github.com/fhmq/hmq/mqtt/broker/lib/topics"
 	"github.com/fhmq/hmq/plugins/bridge"
 	"github.com/fhmq/hmq/plugins/manage"
 	"net"
@@ -35,7 +33,7 @@ type Message struct {
 type Broker struct {
 	id          string
 	mu          sync.Mutex
-	config      *config2.Config
+	config      *config.Config
 	tlsConfig   *tls.Config
 	wpool       *pool.WorkerPool
 	clients     sync.Map
@@ -43,13 +41,12 @@ type Broker struct {
 	remotes     sync.Map
 	nodes       map[string]interface{}
 	clusterPool chan *Message
-	topicsMgr   *topics2.Manager
-	sessionMgr  *sessions2.Manager
+	topicsMgr   *topics.Manager
+	sessionMgr  *sessions.Manager
 
-	database database.IDatabase // 数据库接口
-	adapter  adapter.IAdapter   // 业务适配器
+	things Things // 用于对接物联网相关接口
 
-	bridgeMQ bridge.BridgeMQ
+	bridgeMQ bridge.BridgeMQ // 该处日后会被优化掉
 }
 
 func newMessagePool() []chan *Message {
@@ -61,57 +58,41 @@ func newMessagePool() []chan *Message {
 	return pool
 }
 
-func NewBroker(config *config2.Config) (*Broker, error) {
-	if config == nil {
-		config = config2.DefaultConfig
+func NewBroker(things Things, cfg *config.Config) (*Broker, error) {
+	if cfg == nil {
+		cfg = config.DefaultConfig
 	}
 
 	b := &Broker{
 		id:          GenUniqueId(),
-		config:      config,
-		wpool:       pool.New(config.WorkerNum),
+		config:      cfg,
+		wpool:       pool.New(cfg.WorkerNum),
 		nodes:       make(map[string]interface{}),
 		clusterPool: make(chan *Message),
+
+		things: things,
 	}
 
 	var err error
-	b.topicsMgr, err = topics2.NewManager("mem")
+	b.topicsMgr, err = topics.NewManager("mem")
 	if err != nil {
 		log.Error("new topic manager error", zap.Error(err))
 		return nil, err
 	}
 
-	b.sessionMgr, err = sessions2.NewManager("mem")
+	b.sessionMgr, err = sessions.NewManager("mem")
 	if err != nil {
 		log.Error("new session manager error", zap.Error(err))
 		return nil, err
 	}
 
 	if b.config.TlsPort != "" {
-		tlsconfig, err := config2.NewTLSConfig(b.config.TlsInfo)
+		tlsconfig, err := config.NewTLSConfig(b.config.TlsInfo)
 		if err != nil {
 			log.Error("new tlsConfig error", zap.Error(err))
 			return nil, err
 		}
 		b.tlsConfig = tlsconfig
-	}
-
-	err = database.InitDatabase(b.config.Database.Type, b.config.Database.Dsn, b.config.Database.Extend)
-	if err != nil {
-		log.Error("init database error", zap.Error(err))
-		return nil, err
-	}
-
-	b.database, err = database.Database()
-	if err != nil {
-		log.Error("get database error", zap.Error(err))
-		return nil, err
-	}
-
-	b.adapter, err = adapter.NewAdapter(b.database)
-	if err != nil {
-		log.Error("new adapter error", zap.Error(err))
-		return nil, err
 	}
 
 	b.bridgeMQ = b.config.Plugin.Bridge
@@ -394,7 +375,7 @@ func (b *Broker) handleConnection(typ int, conn net.Conn) {
 			ipaddress = addr.IP.String()
 		}
 		// 连接成功调用
-		b.adapter.OnClientConnected(msg.ClientIdentifier, msg.Username, ipaddress)
+		b.things.OnClientConnected(msg.ClientIdentifier, msg.Username, ipaddress)
 
 		b.OnlineOfflineNotification(cid, true)
 		{
