@@ -19,7 +19,7 @@ func (m *mqtt) OnClientConnected(clientID, ipaddress string) {
 		ProductId: pd[0],
 		DeviceId:  pd[1],
 	}).Updates(map[string]interface{}{
-		"ipaddress":  ipaddress,
+		"IpAddress":  ipaddress,
 		"State":      model.OnlineState,
 		"OnlineTime": time.Now(),
 	}); tx.Error != nil {

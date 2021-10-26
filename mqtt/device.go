@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/fhmq/hmq/model"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -27,7 +28,7 @@ func (d *Device) valid(password string) bool {
 		// 假如不为 ${nonce}|${timestamp}|${signMethod} 格式，返回错误
 		return false
 	}
-	var nonce, timestamp, signMethod, pwd = passwords[0], passwords[1], passwords[2], passwords[3]
+	var nonce, _timestamp, signMethod, pwd = passwords[0], passwords[1], passwords[2], passwords[3]
 
 	if match, err := regexp.MatchString(`^[A-Za-z0-9]{4,8}$`, nonce); err != nil {
 		return false
@@ -35,8 +36,13 @@ func (d *Device) valid(password string) bool {
 		return false
 	}
 
+	timestamp, err := strconv.ParseInt(_timestamp, 10, 64)
+	if err != nil {
+		return false
+	}
+
 	// 校验密码
-	var p = fmt.Sprintf("clientid=%s\nnonce=%s\ntimestamp=%s",
+	var p = fmt.Sprintf("clientid=%s\nnonce=%s\ntimestamp=%d",
 		d.ProductId+":"+d.DeviceId, nonce, timestamp)
 	switch signMethod {
 	case "HmacSHA256":

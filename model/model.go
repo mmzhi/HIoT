@@ -32,7 +32,7 @@ const (
 	InactiveDisabledState DeviceState = 4 // 未激活且禁用
 )
 
-// Product 产品的表结构声明
+// Product 产品的结构声明
 type Product struct {
 	ProductId string `gorm:"primaryKey"`
 
@@ -48,7 +48,7 @@ func (*Product) TableName() string {
 	return "product"
 }
 
-// Device 设备的表结构声明
+// Device 设备的结构声明
 type Device struct {
 	ProductId string `gorm:"primaryKey"`
 	DeviceId  string `gorm:"primaryKey"`

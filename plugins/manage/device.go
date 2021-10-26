@@ -52,7 +52,7 @@ type DeviceAddRequest struct {
 // generateSecret 生成随机密钥
 func (ctr *DeviceController) generateSecret() string {
 	var letters = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := make([]rune, 8)
+	b := make([]rune, 16)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
