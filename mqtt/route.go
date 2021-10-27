@@ -4,6 +4,8 @@ package mqtt
 
 import (
 	"github.com/eclipse/paho.mqtt.golang/packets"
+	"github.com/fhmq/hmq/logger"
+	"go.uber.org/zap"
 	"strings"
 	"sync"
 )
@@ -73,6 +75,9 @@ func newRouter(m *mqtt) *router {
 			{"sys/+/+/config/get", deviceCtl.getConfig},
 
 			{"sys/+/+/subdevice/list", subdeviceCtl.getList},
+			{"sys/+/+/subdevice/login", subdeviceCtl.login},
+			{"sys/+/+/subdevice/logout", subdeviceCtl.logout},
+			{"sys/+/+/subdevice/config/get", subdeviceCtl.getConfig},
 		},
 	}
 	return router
@@ -81,8 +86,10 @@ func newRouter(m *mqtt) *router {
 // HandleMessage 处理MQTT的消息
 func (r *router) HandleMessage(clientID, topic string, data []byte) {
 	r.RLock()
+	defer r.RUnlock()
 	for _, e := range r.routes {
 		if e.match(topic) {
+			logger.Debug("match topic", zap.String("route", e.topic), zap.String("topic", topic))
 			go func() {
 				m := e.callback(&requestMessage{
 					clientID: clientID,
@@ -100,7 +107,7 @@ func (r *router) HandleMessage(clientID, topic string, data []byte) {
 					r.broker.PublishMessage(packet)
 				}
 			}()
+			return
 		}
 	}
-	r.RUnlock()
 }

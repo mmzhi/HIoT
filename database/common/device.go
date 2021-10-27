@@ -45,7 +45,12 @@ func (db *_device) GetConfig(productId string, deviceId string) (*string, error)
 
 func (db *_device) List(page model.Page, device *model.Device) ([]model.Device, model.Page, error) {
 	var devices []model.Device
-	if tx := db.orm.Model(&model.Device{}).Where("product_id = ?", device.ProductId).Scopes(database.Paginate(&page)).Find(&devices); tx.Error != nil {
+
+	sql := db.orm.Model(&model.Device{})
+	if device.ProductId != "" {
+		sql = sql.Where("product_id = ?", device.ProductId)
+	}
+	if tx := sql.Scopes(database.Paginate(&page)).Find(&devices); tx.Error != nil {
 		return nil, page, tx.Error
 	}
 	var total int64
@@ -66,10 +71,11 @@ func (db *_device) Update(device *model.Device) error {
 
 // UpdateState 更新 Device 状态
 func (db *_device) UpdateState(productId string, deviceId string, state model.DeviceState) error {
-	if tx := db.orm.Model(&model.Device{}).Select("state").Updates(&model.Device{
+	if tx := db.orm.Model(&model.Device{
 		ProductId: productId,
 		DeviceId:  deviceId,
-		State:     state,
+	}).Select("state").Updates(&model.Device{
+		State: state,
 	}); tx.Error != nil {
 		return tx.Error
 	}
@@ -78,10 +84,11 @@ func (db *_device) UpdateState(productId string, deviceId string, state model.De
 
 // UpdateConfig 更新设备配置
 func (db *_device) UpdateConfig(productId string, deviceId string, config *string) error {
-	if tx := db.orm.Model(&model.Device{}).Select("config").Updates(&model.Device{
+	if tx := db.orm.Model(&model.Device{
 		ProductId: productId,
 		DeviceId:  deviceId,
-		Config:    config,
+	}).Select("config").Updates(&model.Device{
+		Config: config,
 	}); tx.Error != nil {
 		return tx.Error
 	}
@@ -90,9 +97,10 @@ func (db *_device) UpdateConfig(productId string, deviceId string, config *strin
 
 // UpdateGateway 更新网关
 func (db *_device) UpdateGateway(productId string, deviceId string, gatewayProductId *string, gatewayDeviceId *string) error {
-	if tx := db.orm.Model(&model.Device{}).Select("gateway_product_id", "gateway_device_id").Updates(&model.Device{
-		ProductId:        productId,
-		DeviceId:         deviceId,
+	if tx := db.orm.Model(&model.Device{
+		ProductId: productId,
+		DeviceId:  deviceId,
+	}).Select("gateway_product_id", "gateway_device_id").Updates(&model.Device{
 		GatewayProductId: gatewayProductId,
 		GatewayDeviceId:  gatewayDeviceId,
 	}); tx.Error != nil {
@@ -103,9 +111,10 @@ func (db *_device) UpdateGateway(productId string, deviceId string, gatewayProdu
 
 // UpdateSecret 更新密钥
 func (db *_device) UpdateSecret(productId string, deviceId string, deviceSecret string) error {
-	if tx := db.orm.Model(&model.Device{}).Select("device_secret").Updates(&model.Device{
-		ProductId:    productId,
-		DeviceId:     deviceId,
+	if tx := db.orm.Model(&model.Device{
+		ProductId: productId,
+		DeviceId:  deviceId,
+	}).Select("device_secret").Updates(&model.Device{
 		DeviceSecret: deviceSecret,
 	}); tx.Error != nil {
 		return tx.Error
@@ -115,7 +124,10 @@ func (db *_device) UpdateSecret(productId string, deviceId string, deviceSecret 
 
 // Delete 删除指定ID设备
 func (db *_device) Delete(productId string, deviceId string) error {
-	if tx := db.orm.Where("product_id = ? AND device_id = ?", productId, deviceId).Delete(&model.Device{}); tx.Error != nil {
+	if tx := db.orm.Model(&model.Device{
+		ProductId: productId,
+		DeviceId:  deviceId,
+	}).Delete(&model.Device{}); tx.Error != nil {
 		return tx.Error
 	}
 	return nil

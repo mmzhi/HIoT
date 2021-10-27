@@ -128,8 +128,8 @@ type ProductListResponse struct {
 // list 获取产品列表
 func (ctr *ProductController) list(c *gin.Context) {
 
-	pageSize, _ := strconv.Atoi(c.Param("pageSize"))
-	pageCurrent, _ := strconv.Atoi(c.Param("pageCurrent"))
+	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	pageCurrent, _ := strconv.Atoi(c.Query("pageCurrent"))
 
 	products, page, err := database.Database().Product().List(model.Page{
 		Current: pageCurrent,

@@ -19,9 +19,9 @@ func (m *mqtt) OnClientConnected(clientID, ipaddress string) {
 		ProductId: pd[0],
 		DeviceId:  pd[1],
 	}).Updates(map[string]interface{}{
-		"IpAddress":  ipaddress,
-		"State":      model.OnlineState,
-		"OnlineTime": time.Now(),
+		"ip_address":  ipaddress,
+		"state":       model.OnlineState,
+		"online_time": time.Now(),
 	}); tx.Error != nil {
 		logger.Error("client online fail", zap.Error(tx.Error))
 		return
@@ -48,12 +48,12 @@ func (m *mqtt) offline(productId string, deviceId string) {
 	// 设备类型为网关，需同时下线其关联的在线的子设备
 	if device.ProductType == model.GatewayType {
 		if tx := database.Database().Orm().Model(&model.Device{}).Where(map[string]interface{}{
-			"GatewayProductId": productId,
-			"GatewayDeviceId":  deviceId,
-			"State":            model.OnlineState,
+			"gateway_product_id": productId,
+			"gateway_device_id":  deviceId,
+			"state":              model.OnlineState,
 		}).Updates(map[string]interface{}{
-			"State":       model.OfflineState,
-			"OfflineTime": time.Now(),
+			"state":        model.OfflineState,
+			"offline_time": time.Now(),
 		}); tx.Error != nil {
 			logger.Error("subdevice offline fail", zap.Error(tx.Error))
 		}
@@ -65,7 +65,7 @@ func (m *mqtt) offline(productId string, deviceId string) {
 			ProductId: productId,
 			DeviceId:  deviceId,
 		}).Updates(map[string]interface{}{
-			"OfflineTime": time.Now(),
+			"offline_time": time.Now(),
 		}); tx.Error != nil {
 			logger.Error("device offline fail", zap.Error(tx.Error))
 		}
@@ -74,8 +74,8 @@ func (m *mqtt) offline(productId string, deviceId string) {
 			ProductId: productId,
 			DeviceId:  deviceId,
 		}).Updates(map[string]interface{}{
-			"State":       model.OfflineState,
-			"OfflineTime": time.Now(),
+			"state":        model.OfflineState,
+			"offline_time": time.Now(),
 		}); tx.Error != nil {
 			logger.Error("device offline fail", zap.Error(tx.Error))
 		}

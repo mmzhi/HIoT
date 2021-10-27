@@ -22,7 +22,7 @@ func (e *Engine) ConfigDeviceController(route *gin.RouterGroup) *Engine {
 	route = route.Group("/device")
 	{
 		route.POST("/:productId", ctr.add)
-		route.GET("/:productId", ctr.list)
+		route.GET("/", ctr.list)
 		route.GET("/:productId/:deviceId", ctr.get)
 		route.POST("/:productId/:deviceId", ctr.update)
 		route.DELETE("/:productId/:deviceId", ctr.delete)
@@ -208,10 +208,10 @@ type DeviceListResponse struct {
 
 // list 设备列表
 func (ctr *DeviceController) list(c *gin.Context) {
-	pageSize, _ := strconv.Atoi(c.Param("pageSize"))
-	pageCurrent, _ := strconv.Atoi(c.Param("pageCurrent"))
+	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	pageCurrent, _ := strconv.Atoi(c.Query("pageCurrent"))
 
-	var productId = c.Param("productId")
+	var productId = c.Query("productId")
 	devices, page, err := database.Database().Device().List(model.Page{
 		Current: pageCurrent,
 		Size:    pageSize,
