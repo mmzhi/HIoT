@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/model"
 	"regexp"
 	"strconv"
@@ -56,4 +57,33 @@ func (d *Device) valid(password string) bool {
 		// 未知的签名方式，返回错误
 		return false
 	}
+}
+
+// deviceController 处理设备相关消息业务
+type deviceController struct {
+	*mqtt
+}
+
+// getConfig 获取设备配置
+func (m *deviceController) getConfig(message RequestMessage) ResponseMessage {
+	// 获取目标 productId 和 deviceId
+	productId, deviceId, err := parseSysTopic(message.Topic())
+	if err != nil {
+		return nil // 不作处理
+	}
+	payload, err := NewRequestPayload(message.Payload())
+	if err != nil {
+		return nil // 不作处理
+	}
+
+	config, err := database.Database().Device().GetConfig(productId, deviceId)
+	if err != nil {
+		return nil // TODO 暂时不作处理
+	}
+
+	return NewQos0ResponseMessage(payload.Success(struct {
+		Config *string `json:"config"`
+	}{
+		Config: config,
+	}).Payload())
 }

@@ -2,6 +2,7 @@ package broker
 
 import (
 	"encoding/json"
+	"github.com/fhmq/hmq/utils"
 	"reflect"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
-	uuid "github.com/google/uuid"
 )
 
 const (
@@ -115,18 +115,10 @@ func delSubMap(m map[string]uint64, topic string) uint64 {
 	return 0
 }
 
-func GenUniqueId() string {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		log.Error("uuid.NewRandom() returned an error: " + err.Error())
-	}
-	return id.String()
-}
-
 func wrapPublishPacket(packet *packets.PublishPacket) *packets.PublishPacket {
 	p := packet.Copy()
 	wrapPayload := map[string]interface{}{
-		"message_id": GenUniqueId(),
+		"message_id": utils.GenUniqueId(),
 		"payload":    string(p.Payload),
 	}
 	b, _ := json.Marshal(wrapPayload)

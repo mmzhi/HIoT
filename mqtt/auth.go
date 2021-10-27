@@ -111,9 +111,9 @@ func (m *mqtt) OnClientCheckAcl(clientID, username, topic string, action broker.
 	if deviceDo.ProductType == model.GatewayType {
 		var params []string
 		// 是否符合指定topic格式
-		if params = sysTopicRegexp.FindStringSubmatch(topic); len(params) == 2 {
+		if params = sysTopicRegexp.FindStringSubmatch(topic); len(params) == 3 {
 			// 不处理
-		} else if params = userTopicRegexp.FindStringSubmatch(topic); len(params) == 2 {
+		} else if params = userTopicRegexp.FindStringSubmatch(topic); len(params) == 3 {
 			// 不处理
 		} else {
 			// 都不符合，退出处理

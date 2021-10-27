@@ -3,6 +3,7 @@ package mqtt
 // 该文件实现类似mqtt.route中的功能
 
 import (
+	"github.com/eclipse/paho.mqtt.golang/packets"
 	"strings"
 	"sync"
 )
@@ -18,31 +19,8 @@ import (
 // 4、获取子设备配置信息		设备调用				sys/{productId}/{deviceId}/subdevice/config/get
 //
 
-type Message interface {
-	ClientID() string
-	Topic() string
-	Payload() []byte
-}
-
-type message struct {
-	clientID string
-	topic    string
-	payload  []byte
-}
-
-func (m *message) ClientID() string {
-	return m.clientID
-}
-
-func (m *message) Topic() string {
-	return m.topic
-}
-
-func (m *message) Payload() []byte {
-	return m.payload
-}
-
-type MessageHandler func(message Message) (Message, error)
+// MessageHandler 消息处理
+type MessageHandler func(message RequestMessage) ResponseMessage
 
 // route 路由
 type route struct {
@@ -87,11 +65,11 @@ type router struct {
 
 // newRouter 初始化路由
 func newRouter(m *mqtt) *router {
+	deviceCtl := deviceController{m}
 	router := &router{
 		mqtt: m,
 		routes: []route{
-			{"sys/+/+/config/get", nil},
-			{"sys/+/+/config/get", nil},
+			{"sys/+/+/config/get", deviceCtl.getConfig},
 		},
 	}
 	return router
@@ -103,11 +81,21 @@ func (r *router) HandleMessage(clientID, topic string, data []byte) {
 	for _, e := range r.routes {
 		if e.match(topic) {
 			go func() {
-				e.callback(&message{
+				m := e.callback(&requestMessage{
 					clientID: clientID,
 					topic:    topic,
 					payload:  data,
 				})
+				if m != nil {
+					// 创建返回的消息包
+					packet := packets.NewControlPacket(packets.Publish).(*packets.PublishPacket)
+					packet.TopicName = topic + "/reply"
+					packet.Qos = m.Qos()
+					packet.Payload = m.Payload()
+
+					// 发送消息
+					r.broker.PublishMessage(packet)
+				}
 			}()
 		}
 	}

@@ -16,7 +16,6 @@ require (
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/segmentio/fasthash v0.0.0-20180216231524-a72b379d632e
-	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/viper v1.8.1
 	github.com/tidwall/gjson v1.6.8
 	go.uber.org/zap v1.17.0

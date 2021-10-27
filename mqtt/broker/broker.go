@@ -9,6 +9,7 @@ import (
 	"github.com/fhmq/hmq/mqtt/broker/lib/topics"
 	"github.com/fhmq/hmq/plugins/bridge"
 	"github.com/fhmq/hmq/plugins/manage"
+	"github.com/fhmq/hmq/utils"
 	"net"
 	"net/http"
 	"sync"
@@ -64,7 +65,7 @@ func NewBroker(things Things, cfg *config.Config) (*Broker, error) {
 	}
 
 	b := &Broker{
-		id:          GenUniqueId(),
+		id:          utils.GenUniqueId(),
 		config:      cfg,
 		wpool:       pool.New(cfg.WorkerNum),
 		nodes:       make(map[string]interface{}),
@@ -502,7 +503,7 @@ func (b *Broker) connectRouter(id, addr string) {
 		remoteID:  id,
 		remoteUrl: addr,
 	}
-	cid := GenUniqueId()
+	cid := utils.GenUniqueId()
 
 	info := info{
 		clientID:  cid,
@@ -672,4 +673,15 @@ func (b *Broker) OnlineOfflineNotification(clientID string, online bool) {
 	packet.Payload = []byte(fmt.Sprintf(`{"clientID":"%s","online":%v,"timestamp":"%s"}`, clientID, online, time.Now().UTC().Format(time.RFC3339)))
 
 	b.PublishMessage(packet)
+}
+
+// Kick 剔除客户端
+func (b *Broker) Kick(clientId string) {
+	cli, ok := b.clients.Load(clientId)
+	if ok {
+		conn, success := cli.(*client)
+		if success {
+			conn.Close()
+		}
+	}
 }

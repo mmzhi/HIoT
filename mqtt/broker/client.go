@@ -950,14 +950,3 @@ func (c *client) pubRel(packetId uint16) error {
 	}
 	return nil
 }
-
-// Kick 剔除客户端
-func (b *Broker) Kick(clientId string) {
-	cli, ok := b.clients.Load(clientId)
-	if ok {
-		conn, success := cli.(*client)
-		if success {
-			conn.Close()
-		}
-	}
-}

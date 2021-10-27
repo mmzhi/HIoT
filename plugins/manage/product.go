@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/model"
+	"github.com/fhmq/hmq/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/mcuadros/go-defaults"
-	"github.com/segmentio/ksuid"
 	"net/http"
 	"strconv"
 )
@@ -68,7 +68,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 	}
 
 	if req.ProductId == nil {
-		product.ProductId = ksuid.New().String()
+		product.ProductId = utils.GenUniqueId()
 	} else {
 		product.ProductId = *req.ProductId
 	}
