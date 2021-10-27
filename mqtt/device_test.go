@@ -12,9 +12,9 @@ import (
 func TestDeviceGeneratePassword(t *testing.T) {
 	d := Device{
 		Device: model.Device{
-			ProductId:    "AAAATABB",
-			DeviceId:     "GGGG",
-			DeviceSecret: "5FBBD6P8",
+			ProductId:    "P1",
+			DeviceId:     "SUB1",
+			DeviceSecret: "5FBBD6P84OE7UT4Q",
 		},
 	}
 

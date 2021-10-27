@@ -66,10 +66,13 @@ type router struct {
 // newRouter 初始化路由
 func newRouter(m *mqtt) *router {
 	deviceCtl := deviceController{m}
+	subdeviceCtl := subdeviceController{m}
 	router := &router{
 		mqtt: m,
 		routes: []route{
 			{"sys/+/+/config/get", deviceCtl.getConfig},
+
+			{"sys/+/+/subdevice/list", subdeviceCtl.getList},
 		},
 	}
 	return router
