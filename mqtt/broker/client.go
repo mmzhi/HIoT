@@ -18,7 +18,6 @@ import (
 	"github.com/eapache/queue"
 
 	log "github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/plugins/bridge"
 	"golang.org/x/net/websocket"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
@@ -419,16 +418,6 @@ func (c *client) processClientPublish(packet *packets.PublishPacket) {
 	// 发消息处理
 	c.broker.things.OnMessagePublish(c.info.clientID, topic, packet.Payload)
 
-	// publish kafka
-	c.broker.Publish(&bridge.Elements{
-		ClientID:  c.info.clientID,
-		Username:  c.info.username,
-		Action:    bridge.Publish,
-		Timestamp: time.Now().Unix(),
-		Payload:   string(packet.Payload),
-		Topic:     topic,
-	})
-
 	switch packet.Qos {
 	case QosAtMostOnce:
 		c.ProcessPublishMessage(packet)
@@ -551,14 +540,6 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 
 		// 订阅处理
 		b.things.OnClientSubscribe(c.info.clientID, topic)
-
-		b.Publish(&bridge.Elements{
-			ClientID:  c.info.clientID,
-			Username:  c.info.username,
-			Action:    bridge.Subscribe,
-			Timestamp: time.Now().Unix(),
-			Topic:     topic,
-		})
 
 		groupName := ""
 		share := false
@@ -753,18 +734,6 @@ func (c *client) processClientUnSubscribe(packet *packets.UnsubscribePacket) {
 		// 取消订阅处理
 		b.things.OnClientUnsubscribe(c.info.clientID, topic)
 
-		{
-			//publish kafka
-			b.Publish(&bridge.Elements{
-				ClientID:  c.info.clientID,
-				Username:  c.info.username,
-				Action:    bridge.Unsubscribe,
-				Timestamp: time.Now().Unix(),
-				Topic:     topic,
-			})
-
-		}
-
 		c.subMapMu.Lock()
 		sub, exist := c.subMap[topic]
 		if exist {
@@ -816,13 +785,6 @@ func (c *client) Close() {
 
 	// 断开连接的通知
 	b.things.OnClientDisconnected(c.info.clientID)
-
-	b.Publish(&bridge.Elements{
-		ClientID:  c.info.clientID,
-		Username:  c.info.username,
-		Action:    bridge.Disconnect,
-		Timestamp: time.Now().Unix(),
-	})
 
 	if c.conn != nil {
 		_ = c.conn.Close()

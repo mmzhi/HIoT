@@ -58,7 +58,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 		if i, ok := err.(validator.ValidationErrors); ok {
 			fmt.Println("Error" + i.Error())
 		}
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
 		return
 	}
 
@@ -75,7 +75,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 
 	err := database.Database().Product().Add(&product)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -94,7 +94,7 @@ func (ctr *ProductController) update(c *gin.Context) {
 		if i, ok := err.(validator.ValidationErrors); ok {
 			fmt.Println("Error" + i.Error())
 		}
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
 		return
 	}
 
@@ -105,7 +105,7 @@ func (ctr *ProductController) update(c *gin.Context) {
 		ProductName: *req.ProductName,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -136,7 +136,7 @@ func (ctr *ProductController) list(c *gin.Context) {
 		Size:    pageSize,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -174,7 +174,7 @@ func (ctr *ProductController) get(c *gin.Context) {
 
 	product, err := database.Database().Product().Get(productId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -191,7 +191,7 @@ func (ctr *ProductController) delete(c *gin.Context) {
 
 	err := database.Database().Product().Delete(productId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 

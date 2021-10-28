@@ -2,6 +2,7 @@ package manage
 
 import (
 	"encoding/base64"
+	"github.com/fhmq/hmq/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -15,7 +16,7 @@ func (e *Engine) BasicAuth() gin.HandlerFunc {
 		auth, username, password := decodeAuthorization(c.Request.Header.Get("Authorization"))
 		if !auth || username != e.config.Username || password != e.config.Password {
 			c.Header("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, fail(0, "Authorization Fail"))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, failWithError(model.ErrPermissionDenied))
 			return
 		}
 		c.Set(gin.AuthUserKey, username)

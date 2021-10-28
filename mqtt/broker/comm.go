@@ -1,17 +1,11 @@
 package broker
 
 import (
-	"encoding/json"
-	"github.com/fhmq/hmq/utils"
+	"github.com/eclipse/paho.mqtt.golang/packets"
+	log "github.com/fhmq/hmq/logger"
+	"go.uber.org/zap"
 	"reflect"
 	"time"
-
-	log "github.com/fhmq/hmq/logger"
-
-	"github.com/tidwall/gjson"
-	"go.uber.org/zap"
-
-	"github.com/eclipse/paho.mqtt.golang/packets"
 )
 
 const (
@@ -115,36 +109,7 @@ func delSubMap(m map[string]uint64, topic string) uint64 {
 	return 0
 }
 
-func wrapPublishPacket(packet *packets.PublishPacket) *packets.PublishPacket {
-	p := packet.Copy()
-	wrapPayload := map[string]interface{}{
-		"message_id": utils.GenUniqueId(),
-		"payload":    string(p.Payload),
-	}
-	b, _ := json.Marshal(wrapPayload)
-	p.Payload = b
-	return p
-}
-
-func unWrapPublishPacket(packet *packets.PublishPacket) *packets.PublishPacket {
-	p := packet.Copy()
-	if gjson.GetBytes(p.Payload, "payload").Exists() {
-		p.Payload = []byte(gjson.GetBytes(p.Payload, "payload").String())
-	}
-	return p
-}
-
 func publish(sub *subscription, packet *packets.PublishPacket) {
-	// var p *packets.PublishPacket
-	// if sub.client.info.username != "root" {
-	// 	p = unWrapPublishPacket(packet)
-	// } else {
-	// 	p = wrapPublishPacket(packet)
-	// }
-	// err := sub.client.WriterPacket(p)
-	// if err != nil {
-	// 	log.Error("process message for psub error,  ", zap.Error(err))
-	// }
 
 	switch packet.Qos {
 	case QosAtMostOnce:

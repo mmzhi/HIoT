@@ -2,6 +2,7 @@ package manage
 
 import (
 	"fmt"
+	"github.com/fhmq/hmq/model"
 	"strings"
 	"time"
 )
@@ -24,6 +25,21 @@ func fail(code int, message string) *Response {
 	return &Response{
 		Code:    code,
 		Message: message,
+	}
+}
+
+// failWithError 错误应答
+func failWithError(err error) *Response {
+	if e, ok := err.(*model.Error); ok {
+		return &Response{
+			Code:    e.Code,
+			Message: e.Message,
+		}
+	}
+
+	return &Response{
+		Code:    model.ErrUnknown.Code,
+		Message: model.ErrUnknown.Message,
 	}
 }
 

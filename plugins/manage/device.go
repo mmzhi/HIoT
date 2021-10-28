@@ -66,7 +66,7 @@ func (ctr *DeviceController) add(c *gin.Context) {
 		if i, ok := err.(validator.ValidationErrors); ok {
 			fmt.Println("Error" + i.Error())
 		}
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
 		return
 	}
 	var productId = c.Param("productId")
@@ -75,7 +75,7 @@ func (ctr *DeviceController) add(c *gin.Context) {
 		err     error
 	)
 	if product, err = database.Database().Product().Get(productId); err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -89,7 +89,7 @@ func (ctr *DeviceController) add(c *gin.Context) {
 
 		State: model.InactiveState,
 	}); err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -108,7 +108,7 @@ func (ctr *DeviceController) update(c *gin.Context) {
 		if i, ok := err.(validator.ValidationErrors); ok {
 			fmt.Println("Error" + i.Error())
 		}
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
 		return
 	}
 
@@ -121,7 +121,7 @@ func (ctr *DeviceController) update(c *gin.Context) {
 		DeviceName: *req.DeviceName,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -156,7 +156,7 @@ func (ctr *DeviceController) get(c *gin.Context) {
 
 	device, err := database.Database().Device().Get(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -219,7 +219,7 @@ func (ctr *DeviceController) list(c *gin.Context) {
 		ProductId: productId,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -265,7 +265,7 @@ func (ctr *DeviceController) delete(c *gin.Context) {
 
 	err := database.Database().Device().Delete(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -280,7 +280,7 @@ func (ctr *DeviceController) enable(c *gin.Context) {
 
 	device, err := database.Database().Device().Get(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -289,12 +289,12 @@ func (ctr *DeviceController) enable(c *gin.Context) {
 		return
 	} else if device.State == model.DisabledState { // 禁用
 		if err := database.Database().Device().UpdateState(productId, deviceId, model.OfflineState); err != nil {
-			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
 	} else { // 禁用且未激活
 		if err := database.Database().Device().UpdateState(productId, deviceId, model.InactiveState); err != nil {
-			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
 	}
@@ -310,7 +310,7 @@ func (ctr *DeviceController) disable(c *gin.Context) {
 
 	device, err := database.Database().Device().Get(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -319,12 +319,12 @@ func (ctr *DeviceController) disable(c *gin.Context) {
 		return
 	} else if device.State == model.InactiveState { // 未激活
 		if err := database.Database().Device().UpdateState(productId, deviceId, model.InactiveDisabledState); err != nil {
-			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
 	} else { // 其余状态
 		if err := database.Database().Device().UpdateState(productId, deviceId, model.DisabledState); err != nil {
-			c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
 	}
@@ -345,7 +345,7 @@ func (ctr *DeviceController) getConfig(c *gin.Context) {
 
 	config, err := database.Database().Device().GetConfig(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -367,7 +367,7 @@ func (ctr *DeviceController) updateConfig(c *gin.Context) {
 		if i, ok := err.(validator.ValidationErrors); ok {
 			fmt.Println("Error" + i.Error())
 		}
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
 		return
 	}
 
@@ -376,7 +376,7 @@ func (ctr *DeviceController) updateConfig(c *gin.Context) {
 
 	err := database.Database().Device().UpdateConfig(productId, deviceId, req.Config)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 	c.JSON(http.StatusOK, success(nil))
@@ -396,7 +396,7 @@ func (ctr *DeviceController) getTopology(c *gin.Context) {
 
 	device, err := database.Database().Device().Get(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
@@ -420,7 +420,7 @@ func (ctr *DeviceController) updateTopology(c *gin.Context) {
 		if i, ok := err.(validator.ValidationErrors); ok {
 			fmt.Println("Error" + i.Error())
 		}
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
 		return
 	}
 
@@ -429,7 +429,7 @@ func (ctr *DeviceController) updateTopology(c *gin.Context) {
 
 	subDevice, err := database.Database().Device().Get(productId, deviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	} else if subDevice.ProductType != model.SubDeviceType {
 		c.JSON(http.StatusBadRequest, fail(0, "not a sub device"))
@@ -440,13 +440,13 @@ func (ctr *DeviceController) updateTopology(c *gin.Context) {
 
 	_, err = database.Database().Device().Get(*req.GatewayProductId, *req.GatewayDeviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
 	err = database.Database().Device().UpdateGateway(productId, deviceId, req.GatewayProductId, req.GatewayDeviceId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 	c.JSON(http.StatusOK, success(nil))
@@ -460,7 +460,7 @@ func (ctr *DeviceController) removeTopology(c *gin.Context) {
 
 	err := database.Database().Device().UpdateGateway(productId, deviceId, nil, nil)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 	c.JSON(http.StatusOK, success(nil))
@@ -474,7 +474,7 @@ func (ctr *DeviceController) reset(c *gin.Context) {
 
 	err := database.Database().Device().UpdateSecret(productId, deviceId, ctr.generateSecret())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fail(0, err.Error()))
+		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 	c.JSON(http.StatusOK, success(nil))

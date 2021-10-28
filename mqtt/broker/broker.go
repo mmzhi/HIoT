@@ -7,7 +7,6 @@ import (
 	log "github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/mqtt/broker/lib/sessions"
 	"github.com/fhmq/hmq/mqtt/broker/lib/topics"
-	"github.com/fhmq/hmq/plugins/bridge"
 	"github.com/fhmq/hmq/plugins/manage"
 	"github.com/fhmq/hmq/utils"
 	"net"
@@ -46,8 +45,6 @@ type Broker struct {
 	sessionMgr  *sessions.Manager
 
 	things Things // 用于对接物联网相关接口
-
-	bridgeMQ bridge.BridgeMQ // 该处日后会被优化掉
 }
 
 func newMessagePool() []chan *Message {
@@ -95,8 +92,6 @@ func NewBroker(things Things, cfg *config.Config) (*Broker, error) {
 		}
 		b.tlsConfig = tlsconfig
 	}
-
-	b.bridgeMQ = b.config.Plugin.Bridge
 
 	return b, nil
 }
@@ -379,14 +374,6 @@ func (b *Broker) handleConnection(typ int, conn net.Conn) {
 		b.things.OnClientConnected(msg.ClientIdentifier, ipaddress)
 
 		b.OnlineOfflineNotification(cid, true)
-		{
-			b.Publish(&bridge.Elements{
-				ClientID:  string(msg.ClientIdentifier),
-				Username:  string(msg.Username),
-				Action:    bridge.Connect,
-				Timestamp: time.Now().Unix(),
-			})
-		}
 	case ROUTER:
 		old, exist = b.routes.Load(cid)
 		if exist {

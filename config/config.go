@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/plugins/bridge"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -32,8 +31,6 @@ type Config struct {
 
 	Debug bool `json:"debug"`
 
-	Plugin Plugins `json:"plugins"`
-
 	Database Database `json:"database"`
 	Manage   Manage   `json:"manage"`
 }
@@ -48,10 +45,6 @@ type Manage struct {
 	Port     int    `json:"port"`     // 管理用的HTTP端口
 	Username string `json:"username"` // 用户名
 	Password string `json:"password"` // 密码
-}
-
-type Plugins struct {
-	Bridge bridge.BridgeMQ
 }
 
 type RouteInfo struct {
@@ -86,8 +79,6 @@ func Configure() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	config.Plugin.Bridge = bridge.NewBridgeMQ("")
 
 	// 检查配置是否正确
 	if err := config.check(); err != nil {
