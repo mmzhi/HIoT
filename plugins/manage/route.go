@@ -33,7 +33,7 @@ import (
 
 // 消息通信
 // 1、向指定设备发送异步消息		POST	/api/v1/message/publish
-// 2、rrpc向设备发送同步消息		POST	/api/v1/message/rrpc
+// 2、rpc向设备发送同步消息			POST	/api/v1/message/rpc
 
 // Engine HTTP对象
 type Engine struct {
