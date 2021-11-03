@@ -18,8 +18,8 @@ type MQTT interface {
 	Start()
 }
 
-// NewMqtt 创建一个mqtt服务
-func NewMqtt(cfg *config.Config) (MQTT, error) {
+// NewCore 创建一个mqtt服务
+func NewCore(cfg *config.Config) (MQTT, error) {
 	var (
 		m   mqtt
 		err error

@@ -2,13 +2,12 @@ package database
 
 import (
 	"errors"
+	"github.com/fhmq/hmq/config"
 	"github.com/fhmq/hmq/model"
-	"github.com/mattn/go-sqlite3"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"strings"
 )
-
-// 数据库功能，该插件为必选
 
 // IDatabase 数据库接口
 type IDatabase interface {
@@ -16,6 +15,8 @@ type IDatabase interface {
 	Product() IProduct
 	Device() IDevice
 }
+
+var Database IDatabase
 
 // IProduct 产品数据库接口
 type IProduct interface {
@@ -81,47 +82,64 @@ const (
 	SQLiteType Type = "sqlite"
 )
 
-// IBuilder 构建器
-type IBuilder interface {
-	// Build DSN信息，可参照https://gorm.io/zh_CN/docs/connecting_to_the_database.html
-	Build(dsn string, extend string) (IDatabase, error)
+type db struct {
+	*gorm.DB
+	product IProduct
+	device  IDevice
 }
 
-var providers = make(map[string]IBuilder)
-
-// Register 数据库方法
-func Register(name string, i IBuilder) error {
-	if name == "" || i == nil {
-		return errors.New("invalid args")
-	}
-
-	if _, dup := providers[name]; dup {
-		return errors.New("already exists")
-	}
-
-	providers[name] = i
-
-	return nil
+func (db *db) Orm() *gorm.DB {
+	return db.DB
 }
 
-var _database IDatabase
+func (db *db) Product() IProduct {
+	return db.product
+}
 
-// Database 获取数据库
-func Database() IDatabase {
-	return _database
+func (db *db) Device() IDevice {
+	return db.device
 }
 
 // InitDatabase 新建数据库对象
-func InitDatabase(name string, dsn string, extend string) (err error) {
-	if name == "" {
-		name = string(SQLiteType)
+func InitDatabase(cfg config.Database) (err error) {
+	var orm *gorm.DB
+	switch Type(cfg.Type) {
+	case SQLiteType:
+	case "":
+		if orm, err = initSqlite(cfg); err != nil {
+			return err
+		}
+	case MySQLType:
+		if orm, err = initMysql(cfg); err != nil {
+			return err
+		}
+	default:
+		return errors.New("unsupported database type")
 	}
-	builder, ok := providers[name]
-	if !ok {
-		return errors.New("not exists")
+	err = orm.AutoMigrate(&model.Product{}, &model.Device{})
+	if err != nil {
+		return err
 	}
-	_database, err = builder.Build(dsn, extend)
-	return err
+	Database = &db{
+		DB:      orm,
+		product: &_product{orm},
+		device:  &_device{orm},
+	}
+	return nil
+}
+
+// initMysql 初始化sqlite引擎
+func initMysql(cfg config.Database) (*gorm.DB, error) {
+	return gorm.Open(mysql.Open(cfg.Dsn), &gorm.Config{
+		Logger: NewGormLogger(),
+	})
+}
+
+// initSqlite 初始化sqlite引擎
+func initSqlite(cfg config.Database) (*gorm.DB, error) {
+	return gorm.Open(sqlite.Open("hiot.db"), &gorm.Config{
+		Logger: NewGormLogger(),
+	})
 }
 
 // Paginate 分页方法
@@ -139,16 +157,4 @@ func Paginate(page *model.Page) func(db *gorm.DB) *gorm.DB {
 		offset := (page.Current - 1) * page.Size
 		return db.Offset(offset).Limit(page.Size)
 	}
-}
-
-// Error 对异常重新包装
-func Error(err error) error {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return model.ErrDataNotExist
-	} else if sqliteError, ok := err.(sqlite3.Error); ok {
-		if strings.HasPrefix(sqliteError.Error(), "UNIQUE constraint failed") {
-			return model.ErrDuplicateData
-		}
-	}
-	return model.ErrDatabase
 }

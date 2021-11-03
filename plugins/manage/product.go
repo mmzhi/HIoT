@@ -73,7 +73,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 		product.ProductId = *req.ProductId
 	}
 
-	err := database.Database().Product().Add(&product)
+	err := database.Database.Product().Add(&product)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -100,7 +100,7 @@ func (ctr *ProductController) update(c *gin.Context) {
 
 	var productId = c.Param("productId")
 
-	err := database.Database().Product().Update(&model.Product{
+	err := database.Database.Product().Update(&model.Product{
 		ProductId:   productId,
 		ProductName: *req.ProductName,
 	})
@@ -131,7 +131,7 @@ func (ctr *ProductController) list(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
 	pageCurrent, _ := strconv.Atoi(c.Query("pageCurrent"))
 
-	products, page, err := database.Database().Product().List(model.Page{
+	products, page, err := database.Database.Product().List(model.Page{
 		Current: pageCurrent,
 		Size:    pageSize,
 	})
@@ -172,7 +172,7 @@ type ProductGetResponse struct {
 func (ctr *ProductController) get(c *gin.Context) {
 	var productId = c.Param("productId")
 
-	product, err := database.Database().Product().Get(productId)
+	product, err := database.Database.Product().Get(productId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -189,7 +189,7 @@ func (ctr *ProductController) get(c *gin.Context) {
 func (ctr *ProductController) delete(c *gin.Context) {
 	var productId = c.Param("productId")
 
-	err := database.Database().Product().Delete(productId)
+	err := database.Database.Product().Delete(productId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return

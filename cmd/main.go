@@ -9,9 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-
-	_ "github.com/fhmq/hmq/database/mysql"
-	_ "github.com/fhmq/hmq/database/sqlite"
 )
 
 func main() {
@@ -31,13 +28,13 @@ func main() {
 	}
 
 	// 初始化 数据库
-	err = database.InitDatabase(cfg.Database.Type, cfg.Database.Dsn, cfg.Database.Extend)
+	err = database.InitDatabase(cfg.Database)
 	if err != nil {
 		logger.Fatal("init database error", zap.Error(err))
 	}
 
 	// 初始化 MQTT
-	m, err := core.NewMqtt(cfg)
+	m, err := core.NewCore(cfg)
 	if err != nil {
 		logger.Fatal("New MQTT Broker error: ", zap.Error(err))
 	}

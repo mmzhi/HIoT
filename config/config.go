@@ -36,9 +36,8 @@ type Config struct {
 }
 
 type Database struct {
-	Type   string `json:"type"`   // 数据库类型
-	Dsn    string `json:"dsn"`    // dsn地址
-	Extend string `json:"extend"` // 其他配置，需自行解析
+	Type string `json:"type"` // 数据库类型
+	Dsn  string `json:"dsn"`  // dsn地址
 }
 
 type Manage struct {
