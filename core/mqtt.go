@@ -19,7 +19,7 @@ type MQTT interface {
 }
 
 // NewCore 创建一个mqtt服务
-func NewCore(cfg *config.Config) (MQTT, error) {
+func NewCore(cfg *config.ConfigOptions) (MQTT, error) {
 	var (
 		m   mqtt
 		err error

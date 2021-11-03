@@ -12,7 +12,7 @@ import (
 	"io/ioutil"
 )
 
-type Config struct {
+type ConfigOptions struct {
 	WorkerNum int `json:"workerNum"`
 
 	Host string `json:"host"`
@@ -58,17 +58,17 @@ type TLSInfo struct {
 	KeyFile  string `json:"keyFile"`
 }
 
-var DefaultConfig = &Config{
+var Config = &ConfigOptions{
 	WorkerNum: 4096,
 	Host:      "0.0.0.0",
 	Port:      "1883",
 }
 
 // Configure 配置配置文件
-func Configure() (*Config, error) {
+func Configure() (*ConfigOptions, error) {
 
 	// 从 flag 获取配置
-	config, err := LoadFlag(DefaultConfig)
+	config, err := LoadFlag(Config)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func Configure() (*Config, error) {
 }
 
 // LoadFlag 解析命令行命令
-func LoadFlag(config *Config) (*Config, error) {
+func LoadFlag(config *ConfigOptions) (*ConfigOptions, error) {
 
 	var configFile string // 配置文件
 
@@ -125,7 +125,7 @@ func LoadFlag(config *Config) (*Config, error) {
 }
 
 // LoadConfig 解析本地配置文件
-func LoadConfig(config *Config) (*Config, error) {
+func LoadConfig(config *ConfigOptions) (*ConfigOptions, error) {
 
 	// 没有设置配置文件，加载本地指定目录
 	if viper.ConfigFileUsed() == "" {
@@ -153,7 +153,7 @@ func LoadConfig(config *Config) (*Config, error) {
 }
 
 // check 检查配置文件是否正确
-func (config *Config) check() error {
+func (config *ConfigOptions) check() error {
 
 	if config.WorkerNum == 0 {
 		config.WorkerNum = 1024
