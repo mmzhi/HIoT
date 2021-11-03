@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/fhmq/hmq/config"
+	"github.com/fhmq/hmq/core"
 	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/mqtt"
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
@@ -37,12 +37,12 @@ func main() {
 	}
 
 	// 初始化 MQTT
-	m, err := mqtt.NewMqtt(cfg)
+	m, err := core.NewMqtt(cfg)
 	if err != nil {
 		logger.Fatal("New MQTT Broker error: ", zap.Error(err))
 	}
-	m.Start()
 
+	m.Start() // 启动MQTT服务
 	s := waitForSignal()
 	logger.Infof("signal received, broker closed. %s", s)
 }

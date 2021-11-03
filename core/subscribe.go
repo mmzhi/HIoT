@@ -1,4 +1,4 @@
-package mqtt
+package core
 
 import (
 	"encoding/json"

@@ -1,10 +1,10 @@
-package mqtt
+package core
 
 import (
 	"fmt"
+	"github.com/fhmq/hmq/core/broker"
 	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/model"
-	"github.com/fhmq/hmq/mqtt/broker"
 	"regexp"
 	"strings"
 )

@@ -43,12 +43,6 @@ func (e *Engine) ConfigDeviceController(route *gin.RouterGroup) *Engine {
 	return e
 }
 
-// DeviceAddRequest 添加设备请求
-type DeviceAddRequest struct {
-	DeviceId   *string `json:"deviceId"`
-	DeviceName *string `json:"deviceName" binding:"required"`
-}
-
 // generateSecret 生成随机密钥
 func (ctr *DeviceController) generateSecret() string {
 	var letters = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -57,6 +51,12 @@ func (ctr *DeviceController) generateSecret() string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+// DeviceAddRequest 添加设备请求
+type DeviceAddRequest struct {
+	DeviceId   *string `json:"deviceId"`
+	DeviceName *string `json:"deviceName" binding:"required"`
 }
 
 // add 添加设备

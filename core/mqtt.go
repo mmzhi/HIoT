@@ -1,9 +1,9 @@
-package mqtt
+package core
 
 import (
 	"github.com/fhmq/hmq/config"
+	"github.com/fhmq/hmq/core/broker"
 	log "github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/mqtt/broker"
 	"go.uber.org/zap"
 )
 
