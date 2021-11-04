@@ -5,7 +5,9 @@ import (
 	"github.com/fhmq/hmq/core"
 	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/logger"
+	"github.com/fhmq/hmq/plugins/manage"
 	"go.uber.org/zap"
+	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -34,9 +36,19 @@ func main() {
 	}
 
 	// 初始化 MQTT
-	m, err := core.NewCore(cfg)
+	m, err := core.NewCore()
 	if err != nil {
 		logger.Fatal("New MQTT Broker error: ", zap.Error(err))
+	}
+
+	// HTTP管理接口
+	{
+		m, err := manage.NewManage()
+		if err != nil {
+			log.Fatal("new manage fail", zap.Error(err))
+			return
+		}
+		go m.Run()
 	}
 
 	m.Start() // 启动MQTT服务

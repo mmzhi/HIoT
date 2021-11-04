@@ -7,7 +7,6 @@ import (
 	"github.com/fhmq/hmq/core/broker/lib/sessions"
 	"github.com/fhmq/hmq/core/broker/lib/topics"
 	log "github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/plugins/manage"
 	"github.com/fhmq/hmq/utils"
 	"net"
 	"net/http"
@@ -55,11 +54,11 @@ func newMessagePool() []chan *Message {
 	return pool
 }
 
-func NewBroker(things Things, cfg *config.ConfigOptions) (*Broker, error) {
+func NewBroker(things Things) (*Broker, error) {
 	b := &Broker{
 		id: utils.GenUniqueId(),
 
-		wpool:       pool.New(cfg.WorkerNum),
+		wpool:       pool.New(config.Config.WorkerNum),
 		nodes:       make(map[string]interface{}),
 		clusterPool: make(chan *Message),
 
@@ -110,20 +109,6 @@ func (b *Broker) Start() {
 	if b == nil {
 		log.Error("broker is null")
 		return
-	}
-
-	// HTTP管理接口
-	{
-		m, err := manage.NewManage(&manage.Config{
-			Port:     config.Config.Manage.Port,
-			Username: config.Config.Manage.Username,
-			Password: config.Config.Manage.Password,
-		})
-		if err != nil {
-			log.Fatal("new manage fail", zap.Error(err))
-			return
-		}
-		go m.Run()
 	}
 
 	//listen client over tcp

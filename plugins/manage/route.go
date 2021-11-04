@@ -39,7 +39,7 @@ import (
 type Engine struct {
 	*gin.Engine
 
-	config *Config // 配置
+	config *_config // 配置
 
 	productController ProductController // 产品控制器
 	deviceController  DeviceController  // 设备控制器

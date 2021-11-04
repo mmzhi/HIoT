@@ -1,6 +1,8 @@
 package manage
 
-type Config struct {
+import "github.com/fhmq/hmq/config"
+
+type _config struct {
 	Port     int    // 端口
 	Username string // 用户名
 	Password string // 密码
@@ -13,8 +15,12 @@ type IManage interface {
 }
 
 // NewManage 新建适配器
-func NewManage(config *Config) (IManage, error) {
+func NewManage() (IManage, error) {
 	return &Engine{
-		config: config,
+		config: &_config{
+			Port:     config.Config.Manage.Port,
+			Username: config.Config.Manage.Username,
+			Password: config.Config.Manage.Password,
+		},
 	}, nil
 }

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"github.com/fhmq/hmq/config"
 	"github.com/fhmq/hmq/core/broker"
 	log "github.com/fhmq/hmq/logger"
 	"go.uber.org/zap"
@@ -19,13 +18,13 @@ type MQTT interface {
 }
 
 // NewCore 创建一个mqtt服务
-func NewCore(cfg *config.ConfigOptions) (MQTT, error) {
+func NewCore() (MQTT, error) {
 	var (
 		m   mqtt
 		err error
 	)
 
-	if m.broker, err = broker.NewBroker(&m, cfg); err != nil {
+	if m.broker, err = broker.NewBroker(&m); err != nil {
 		log.Error("new broker error", zap.Error(err))
 		return nil, err
 	}
