@@ -1,12 +1,13 @@
 package manage
 
-import "github.com/ruixiaoedu/hiot/config"
-
-type _config struct {
-	Port     int    // 端口
-	Username string // 用户名
-	Password string // 密码
-}
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/ruixiaoedu/hiot/adapter"
+	"github.com/ruixiaoedu/hiot/config"
+	"github.com/ruixiaoedu/hiot/logger"
+	"go.uber.org/zap"
+)
 
 // IManage HTTP接口管理
 type IManage interface {
@@ -14,13 +15,37 @@ type IManage interface {
 	Run()
 }
 
+// manage HTTP对象
+type manage struct {
+	gin    *gin.Engine
+	engine adapter.Engine // 引擎
+}
+
 // NewManage 新建适配器
-func NewManage() (IManage, error) {
-	return &Engine{
-		config: &_config{
-			Port:     config.Config.Manage.Port,
-			Username: config.Config.Manage.Username,
-			Password: config.Config.Manage.Password,
-		},
-	}, nil
+func NewManage(engine adapter.Engine) IManage {
+
+	gin.SetMode(gin.ReleaseMode)
+
+	m := manage{
+		engine: engine,
+		gin:    gin.New(),
+	}
+	m.gin.Use(RecoveryWithLogger())
+
+	{
+		// 第一版本接口
+		authorized := m.gin.Group("/api/v1", m.BasicAuth())
+		NewProductController(m).Routes(authorized)
+		NewDeviceController(m).Routes(authorized)
+	}
+
+	return &m
+}
+
+// Run 运行
+func (e *manage) Run() {
+	err := e.gin.Run(fmt.Sprintf("0.0.0.0:%d", config.Config.Manage.Port))
+	if err != nil {
+		logger.Fatal("http manage error", zap.Error(err))
+	}
 }

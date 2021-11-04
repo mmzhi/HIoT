@@ -1,12 +1,5 @@
 package manage
 
-import (
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/ruixiaoedu/hiot/logger"
-	"go.uber.org/zap"
-)
-
 // HTTP接口一览
 //
 // 产品管理
@@ -34,32 +27,3 @@ import (
 // 消息通信
 // 1、向指定设备发送异步消息		POST	/api/v1/message/publish
 // 2、rpc向设备发送同步消息			POST	/api/v1/message/rpc
-
-// Engine HTTP对象
-type Engine struct {
-	*gin.Engine
-
-	config *_config // 配置
-
-	productController ProductController // 产品控制器
-	deviceController  DeviceController  // 设备控制器
-}
-
-// Run 运行
-func (e *Engine) Run() {
-	gin.SetMode(gin.ReleaseMode)
-
-	e.Engine = gin.New()
-	e.Engine.Use(RecoveryWithLogger())
-
-	authorized := e.Engine.Group("/api/v1", e.BasicAuth())
-
-	e.ConfigProductController(authorized).
-		ConfigDeviceController(authorized)
-
-	err := e.Engine.Run(fmt.Sprintf("0.0.0.0:%d", e.config.Port))
-
-	if err != nil {
-		logger.Fatal("http manage error", zap.Error(err))
-	}
-}

@@ -1,17 +1,30 @@
 package main
 
 import (
+	"github.com/ruixiaoedu/hiot/adapter"
 	"github.com/ruixiaoedu/hiot/config"
 	"github.com/ruixiaoedu/hiot/core"
 	"github.com/ruixiaoedu/hiot/logger"
 	"github.com/ruixiaoedu/hiot/plugins/manage"
 	"github.com/ruixiaoedu/hiot/repository"
 	"go.uber.org/zap"
-	"log"
 	"os"
 	"os/signal"
 	"runtime"
 )
+
+type engine struct {
+	core   adapter.Core
+	manage adapter.Manage
+}
+
+func (e *engine) Core() adapter.Core {
+	return e.core
+}
+
+func (e *engine) Manage() adapter.Manage {
+	return e.manage
+}
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -35,23 +48,23 @@ func main() {
 		logger.Fatal("init repository error", zap.Error(err))
 	}
 
+	e := engine{}
+
 	// 初始化 MQTT
-	m, err := core.NewCore()
+	c, err := core.NewCore(&e)
 	if err != nil {
 		logger.Fatal("New MQTT Broker error: ", zap.Error(err))
 	}
+	e.core = c
 
 	// HTTP管理接口
 	{
-		m, err := manage.NewManage()
-		if err != nil {
-			log.Fatal("new manage fail", zap.Error(err))
-			return
-		}
+		m := manage.NewManage(&e)
+		e.manage = m
 		go m.Run()
 	}
 
-	m.Start() // 启动MQTT服务
+	c.Run() // 启动MQTT服务
 	s := waitForSignal()
 	logger.Infof("signal received, broker closed. %s", s)
 }

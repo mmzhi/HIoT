@@ -13,35 +13,21 @@ import (
 )
 
 // ProductController 产品控制器
-type ProductController struct {
-	*Engine
+type ProductController manage
+
+// NewProductController 新建ProductController
+func NewProductController(m manage) ProductController {
+	return ProductController(m)
 }
 
-// ConfigProductController 新建ProductController
-func (e *Engine) ConfigProductController(route *gin.RouterGroup) *Engine {
-	ctr := ProductController{e}
+// Routes 创建路由
+func (ctr ProductController) Routes(route *gin.RouterGroup) {
 	route = route.Group("/product")
-	{
-		route.POST("/", ctr.add)
-		route.POST("/:productId", ctr.update)
-		route.GET("/:productId", ctr.get)
-		route.GET("/", ctr.list)
-		route.DELETE("/:productId", ctr.delete)
-	}
-	e.productController = ctr
-	return e
-}
-
-// Run 运行产品Controller
-func (ctr *ProductController) Run() {
-	route := ctr.Group("/api/v1/product")
-	{
-		route.POST("/", ctr.add)
-		route.POST("/:productId", ctr.update)
-		route.GET("/:productId", ctr.get)
-		route.GET("/", ctr.list)
-		route.DELETE("/:productId", ctr.delete)
-	}
+	route.POST("/", ctr.add)
+	route.POST("/:productId", ctr.update)
+	route.GET("/:productId", ctr.get)
+	route.GET("/", ctr.list)
+	route.DELETE("/:productId", ctr.delete)
 }
 
 // ProductAddRequest 添加产品 请求

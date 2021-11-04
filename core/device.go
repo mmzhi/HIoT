@@ -61,7 +61,7 @@ func (d *Device) valid(password string) bool {
 
 // deviceController 处理设备相关消息业务
 type deviceController struct {
-	*mqtt
+	*Core
 }
 
 // getConfig 获取设备配置

@@ -105,7 +105,7 @@ func (b *Broker) SubmitWork(clientId string, msg *Message) {
 
 }
 
-func (b *Broker) Start() {
+func (b *Broker) Run() {
 	if b == nil {
 		log.Error("broker is null")
 		return

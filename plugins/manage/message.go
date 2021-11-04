@@ -5,9 +5,7 @@ import (
 )
 
 // MessageController 消息控制器
-type MessageController struct {
-	*Engine
-}
+type MessageController manage
 
 // add 添加设备
 func (ctr *MessageController) add(c *gin.Context) {

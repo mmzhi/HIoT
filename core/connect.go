@@ -9,7 +9,7 @@ import (
 )
 
 // OnClientConnected MQTT连接时通知
-func (m *mqtt) OnClientConnected(clientID, ipaddress string) {
+func (m *Core) OnClientConnected(clientID, ipaddress string) {
 	pd := strings.Split(clientID, ":")
 	if len(pd) != 2 {
 		return
@@ -25,7 +25,7 @@ func (m *mqtt) OnClientConnected(clientID, ipaddress string) {
 }
 
 // OnClientDisconnected MQTT断开连接时通知
-func (m *mqtt) OnClientDisconnected(clientID string) {
+func (m *Core) OnClientDisconnected(clientID string) {
 	pd := strings.Split(clientID, ":")
 	if len(pd) != 2 {
 		return

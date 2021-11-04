@@ -12,35 +12,34 @@ import (
 )
 
 // DeviceController 设备控制器
-type DeviceController struct {
-	*Engine
+type DeviceController manage
+
+// NewDeviceController 新建DeviceController
+func NewDeviceController(m manage) DeviceController {
+	return DeviceController(m)
 }
 
-// ConfigDeviceController 新建DeviceController
-func (e *Engine) ConfigDeviceController(route *gin.RouterGroup) *Engine {
-	ctr := DeviceController{e}
+// Routes 创建路由
+func (ctr DeviceController) Routes(route *gin.RouterGroup) {
+
 	route = route.Group("/device")
-	{
-		route.POST("/:productId", ctr.add)
-		route.GET("/", ctr.list)
-		route.GET("/:productId/:deviceId", ctr.get)
-		route.POST("/:productId/:deviceId", ctr.update)
-		route.DELETE("/:productId/:deviceId", ctr.delete)
+	route.POST("/:productId", ctr.add)
+	route.GET("/", ctr.list)
+	route.GET("/:productId/:deviceId", ctr.get)
+	route.POST("/:productId/:deviceId", ctr.update)
+	route.DELETE("/:productId/:deviceId", ctr.delete)
 
-		route.POST("/:productId/:deviceId/enable", ctr.enable)
-		route.POST("/:productId/:deviceId/disable", ctr.disable)
+	route.POST("/:productId/:deviceId/enable", ctr.enable)
+	route.POST("/:productId/:deviceId/disable", ctr.disable)
 
-		route.GET("/:productId/:deviceId/config", ctr.getConfig)
-		route.POST("/:productId/:deviceId/config", ctr.updateConfig)
+	route.GET("/:productId/:deviceId/config", ctr.getConfig)
+	route.POST("/:productId/:deviceId/config", ctr.updateConfig)
 
-		route.GET("/:productId/:deviceId/topology", ctr.getTopology)
-		route.POST("/:productId/:deviceId/topology", ctr.updateTopology)
-		route.DELETE("/:productId/:deviceId/topology", ctr.removeTopology)
+	route.GET("/:productId/:deviceId/topology", ctr.getTopology)
+	route.POST("/:productId/:deviceId/topology", ctr.updateTopology)
+	route.DELETE("/:productId/:deviceId/topology", ctr.removeTopology)
 
-		route.POST("/:productId/:deviceId/reset", ctr.reset)
-	}
-	e.deviceController = ctr
-	return e
+	route.POST("/:productId/:deviceId/reset", ctr.reset)
 }
 
 // generateSecret 生成随机密钥

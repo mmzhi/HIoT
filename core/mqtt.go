@@ -1,38 +1,34 @@
 package core
 
 import (
+	"github.com/ruixiaoedu/hiot/adapter"
 	"github.com/ruixiaoedu/hiot/core/broker"
 	log "github.com/ruixiaoedu/hiot/logger"
 	"go.uber.org/zap"
 )
 
-// mqtt 用于处理broker与物联网之间的业务
-type mqtt struct {
+// Core 用于处理broker与物联网之间的业务
+type Core struct {
 	broker *broker.Broker
 	router *router
 }
 
-type MQTT interface {
-	// Start 启动客户端
-	Start()
-}
-
 // NewCore 创建一个mqtt服务
-func NewCore() (MQTT, error) {
+func NewCore(engine adapter.Engine) (*Core, error) {
 	var (
-		m   mqtt
-		err error
+		core Core
+		err  error
 	)
 
-	if m.broker, err = broker.NewBroker(&m); err != nil {
+	if core.broker, err = broker.NewBroker(&core); err != nil {
 		log.Error("new broker error", zap.Error(err))
 		return nil, err
 	}
-	m.router = newRouter(&m)
+	core.router = newRouter(&core)
 
-	return &m, nil
+	return &core, nil
 }
 
-func (m *mqtt) Start() {
-	m.broker.Start()
+func (m *Core) Run() {
+	m.broker.Run()
 }

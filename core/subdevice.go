@@ -10,7 +10,7 @@ import (
 
 // subdeviceController 处理子设备相关消息业务
 type subdeviceController struct {
-	*mqtt
+	*Core
 }
 
 type SubdeviceGetListItemResponse struct {

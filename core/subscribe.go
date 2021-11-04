@@ -1,9 +1,9 @@
 package core
 
-func (m *mqtt) OnClientSubscribe(clientID, topic string) {
+func (m *Core) OnClientSubscribe(clientID, topic string) {
 
 }
 
-func (m *mqtt) OnClientUnsubscribe(clientID, topic string) {
+func (m *Core) OnClientUnsubscribe(clientID, topic string) {
 
 }

@@ -15,7 +15,7 @@ var (
 )
 
 // OnClientAuthenticate 检测连接是否授权
-func (m *mqtt) OnClientAuthenticate(clientID, username, password string) bool {
+func (m *Core) OnClientAuthenticate(clientID, username, password string) bool {
 	if clientID != username {
 		// 不符合clientID和username的命名规则
 		return false
@@ -58,7 +58,7 @@ func (m *mqtt) OnClientAuthenticate(clientID, username, password string) bool {
 }
 
 // OnClientCheckAcl 检测连接是否授权
-func (m *mqtt) OnClientCheckAcl(clientID, username, topic string, action broker.AccessType) bool {
+func (m *Core) OnClientCheckAcl(clientID, username, topic string, action broker.AccessType) bool {
 
 	if clientID != username {
 		// 不符合clientID和username的命名规则

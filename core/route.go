@@ -60,17 +60,17 @@ func match(route []string, topic []string) bool {
 
 // router 路由管理
 type router struct {
-	*mqtt
+	*Core
 	sync.RWMutex
 	routes []route
 }
 
 // newRouter 初始化路由
-func newRouter(m *mqtt) *router {
+func newRouter(m *Core) *router {
 	deviceCtl := deviceController{m}
 	subdeviceCtl := subdeviceController{m}
 	router := &router{
-		mqtt: m,
+		Core: m,
 		routes: []route{
 			{"sys/+/+/config/get", deviceCtl.getConfig},
 
