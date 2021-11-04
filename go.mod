@@ -20,7 +20,6 @@ require (
 	go.uber.org/zap v1.17.0
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/driver/sqlite v1.1.4

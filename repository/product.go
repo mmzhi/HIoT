@@ -6,6 +6,29 @@ import (
 	"math"
 )
 
+// IProduct 产品数据库接口
+type IProduct interface {
+
+	// Add 添加产品
+	Add(product *model.Product) error
+
+	// Get 获取产品
+	Get(productId string) (*model.Product, error)
+
+	// List 获取产品列表
+	List(model.Page) ([]model.Product, model.Page, error)
+
+	// Update 更新产品
+	Update(product *model.Product) error
+
+	// Delete 删除指定ID产品
+	Delete(productId string) error
+}
+
+func NewProduct(orm *gorm.DB) IProduct {
+	return &_product{orm}
+}
+
 type _product struct {
 	*gorm.DB
 }

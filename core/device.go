@@ -76,7 +76,7 @@ func (m *deviceController) getConfig(message RequestMessage) ResponseMessage {
 		return nil // 不作处理
 	}
 
-	config, err := repository.Database.Device().GetConfig(productId, deviceId)
+	config, err := repository.DB.Device().GetConfig(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	}
