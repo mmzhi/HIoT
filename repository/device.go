@@ -1,4 +1,4 @@
-package database
+package repository
 
 import (
 	"github.com/fhmq/hmq/model"

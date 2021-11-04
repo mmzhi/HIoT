@@ -2,9 +2,9 @@ package core
 
 import (
 	"encoding/json"
-	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/model"
+	"github.com/fhmq/hmq/repository"
 	"go.uber.org/zap"
 	"time"
 )
@@ -36,7 +36,7 @@ func (m *subdeviceController) getList(message RequestMessage) ResponseMessage {
 	}
 
 	// 检验是否网关设备，日后在topic订阅时便删除
-	device, err := database.Database.Device().Get(productId, deviceId)
+	device, err := repository.Database.Device().Get(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	} else if device.ProductType != model.GatewayType {
@@ -44,7 +44,7 @@ func (m *subdeviceController) getList(message RequestMessage) ResponseMessage {
 	}
 
 	var subdevices []model.Device
-	if tx := database.Database.Orm().Model(&model.Device{}).Where(map[string]interface{}{
+	if tx := repository.Database.Orm().Model(&model.Device{}).Where(map[string]interface{}{
 		"gateway_product_id": productId,
 		"gateway_device_id":  deviceId,
 	}).Not(map[string]interface{}{ // 提出禁用的子设备
@@ -87,14 +87,14 @@ func (m *subdeviceController) login(message RequestMessage) ResponseMessage {
 	}
 
 	// 检验是否网关设备，日后在topic订阅时便删除
-	device, err := database.Database.Device().Get(productId, deviceId)
+	device, err := repository.Database.Device().Get(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	} else if device.ProductType != model.GatewayType {
 		return nil // TODO 暂时不作处理
 	}
 
-	subdevice, err := database.Database.Device().
+	subdevice, err := repository.Database.Device().
 		GetSubdevice(productId, deviceId, payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
@@ -103,7 +103,7 @@ func (m *subdeviceController) login(message RequestMessage) ResponseMessage {
 		return nil // TODO 暂时不作处理
 	}
 
-	if tx := database.Database.Orm().Model(model.Device{
+	if tx := repository.Database.Orm().Model(model.Device{
 		ProductId: subdevice.ProductId,
 		DeviceId:  subdevice.DeviceId,
 	}).Updates(map[string]interface{}{
@@ -137,7 +137,7 @@ func (m *subdeviceController) logout(message RequestMessage) ResponseMessage {
 		return nil // 不作处理
 	}
 
-	subdevice, err := database.Database.Device().
+	subdevice, err := repository.Database.Device().
 		GetSubdevice(productId, deviceId, payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
@@ -146,7 +146,7 @@ func (m *subdeviceController) logout(message RequestMessage) ResponseMessage {
 		return nil // TODO 暂时不作处理
 	}
 
-	if tx := database.Database.Orm().Model(model.Device{
+	if tx := repository.Database.Orm().Model(model.Device{
 		ProductId: subdevice.ProductId,
 		DeviceId:  subdevice.DeviceId,
 	}).Updates(map[string]interface{}{
@@ -179,7 +179,7 @@ func (m *subdeviceController) getConfig(message RequestMessage) ResponseMessage 
 		return nil // 不作处理
 	}
 
-	subdevice, err := database.Database.Device().
+	subdevice, err := repository.Database.Device().
 		GetSubdevice(productId, deviceId, payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
@@ -188,7 +188,7 @@ func (m *subdeviceController) getConfig(message RequestMessage) ResponseMessage 
 		return nil // TODO 暂时不作处理
 	}
 
-	config, err := database.Database.Device().GetConfig(payload.Data.ProductId, payload.Data.DeviceId)
+	config, err := repository.Database.Device().GetConfig(payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	}

@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/model"
+	"github.com/fhmq/hmq/repository"
 	"regexp"
 	"strconv"
 	"strings"
@@ -76,7 +76,7 @@ func (m *deviceController) getConfig(message RequestMessage) ResponseMessage {
 		return nil // 不作处理
 	}
 
-	config, err := database.Database.Device().GetConfig(productId, deviceId)
+	config, err := repository.Database.Device().GetConfig(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	}

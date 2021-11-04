@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 	"github.com/fhmq/hmq/core/broker"
-	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/model"
+	"github.com/fhmq/hmq/repository"
 	"regexp"
 	"strings"
 )
@@ -33,7 +33,7 @@ func (m *mqtt) OnClientAuthenticate(clientID, username, password string) bool {
 	}
 
 	// 从数据库获取数据
-	deviceDo, err := database.Database.Device().Get(productId, deviceId)
+	deviceDo, err := repository.Database.Device().Get(productId, deviceId)
 	if err != nil {
 		return false
 	}
@@ -77,7 +77,7 @@ func (m *mqtt) OnClientCheckAcl(clientID, username, topic string, action broker.
 	}
 
 	// 从数据库获取数据
-	deviceDo, err := database.Database.Device().Get(productId, deviceId)
+	deviceDo, err := repository.Database.Device().Get(productId, deviceId)
 	if err != nil {
 		return false
 	}
@@ -122,7 +122,7 @@ func (m *mqtt) OnClientCheckAcl(clientID, username, topic string, action broker.
 
 		var subProductId, subDeviceId = params[0], params[1]
 
-		subDeviceDo, err := database.Database.Device().GetSubdevice(productId, deviceId, subProductId, subDeviceId)
+		subDeviceDo, err := repository.Database.Device().GetSubdevice(productId, deviceId, subProductId, subDeviceId)
 		if err != nil {
 			return false
 		}

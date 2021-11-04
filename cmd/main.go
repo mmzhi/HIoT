@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/fhmq/hmq/config"
 	"github.com/fhmq/hmq/core"
-	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/plugins/manage"
+	"github.com/fhmq/hmq/repository"
 	"go.uber.org/zap"
 	"log"
 	"os"
@@ -30,9 +30,9 @@ func main() {
 	}
 
 	// 初始化 数据库
-	err = database.InitDatabase(cfg.Database)
+	err = repository.InitDatabase(cfg.Database)
 	if err != nil {
-		logger.Fatal("init database error", zap.Error(err))
+		logger.Fatal("init repository error", zap.Error(err))
 	}
 
 	// 初始化 MQTT

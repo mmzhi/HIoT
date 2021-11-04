@@ -31,7 +31,7 @@ type ConfigOptions struct {
 
 	Debug bool `json:"debug"`
 
-	Database Database `json:"database"`
+	Database Database `json:"repository"`
 	Manage   Manage   `json:"manage"`
 }
 

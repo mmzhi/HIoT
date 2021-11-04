@@ -19,5 +19,5 @@ var (
 	ErrInvalidFormat    = &Error{400002, "invalid format"}    // 格式错误
 	ErrPermissionDenied = &Error{400003, "permission denied"} // 权限不足
 	ErrDuplicateData    = &Error{400004, "duplicate data"}    // 重复数据
-	ErrDatabase         = &Error{500001, "database error"}    // 未知数据库异常
+	ErrDatabase         = &Error{500001, "repository error"}  // 未知数据库异常
 )

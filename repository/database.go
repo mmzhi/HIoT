@@ -1,4 +1,4 @@
-package database
+package repository
 
 import (
 	"errors"
@@ -114,7 +114,7 @@ func InitDatabase(cfg config.Database) (err error) {
 			return err
 		}
 	default:
-		return errors.New("unsupported database type")
+		return errors.New("unsupported repository type")
 	}
 	err = orm.AutoMigrate(&model.Product{}, &model.Device{})
 	if err != nil {

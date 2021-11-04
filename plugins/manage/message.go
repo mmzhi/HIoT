@@ -26,12 +26,12 @@ func (ctr *MessageController) add(c *gin.Context) {
 	//	product *model.Product
 	//	err     error
 	//)
-	//if product, err = database.Database().Product().Get(productId); err != nil {
+	//if product, err = repository.Database().Product().Get(productId); err != nil {
 	//	c.JSON(http.StatusBadRequest, failWithError(err))
 	//	return
 	//}
 	//
-	//if err := database.Database().Device().Add(&model.Device{
+	//if err := repository.Database().Device().Add(&model.Device{
 	//	ProductId: product.ProductId,
 	//	DeviceId:  *req.DeviceId,
 	//

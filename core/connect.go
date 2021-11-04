@@ -1,9 +1,9 @@
 package core
 
 import (
-	"github.com/fhmq/hmq/database"
 	"github.com/fhmq/hmq/logger"
 	"github.com/fhmq/hmq/model"
+	"github.com/fhmq/hmq/repository"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -16,7 +16,7 @@ func (m *mqtt) OnClientConnected(clientID, ipaddress string) {
 		return
 	}
 	// 修改状态为登录，修改上线是见为当前时间
-	if tx := database.Database.Orm().Model(model.Device{
+	if tx := repository.Database.Orm().Model(model.Device{
 		ProductId: pd[0],
 		DeviceId:  pd[1],
 	}).Updates(map[string]interface{}{
@@ -42,14 +42,14 @@ func (m *mqtt) OnClientDisconnected(clientID string) {
 
 // offline 下线设备
 func (m *mqtt) offline(productId string, deviceId string) {
-	device, err := database.Database.Device().Get(productId, deviceId)
+	device, err := repository.Database.Device().Get(productId, deviceId)
 	if err != nil {
 		logger.Error("get client fail", zap.Error(err))
 	}
 
 	// 设备类型为网关，需同时下线其关联的在线的子设备
 	if device.ProductType == model.GatewayType {
-		if tx := database.Database.Orm().Model(&model.Device{}).Where(map[string]interface{}{
+		if tx := repository.Database.Orm().Model(&model.Device{}).Where(map[string]interface{}{
 			"gateway_product_id": productId,
 			"gateway_device_id":  deviceId,
 			"state":              model.OnlineState,
@@ -63,7 +63,7 @@ func (m *mqtt) offline(productId string, deviceId string) {
 
 	if device.State == model.DisabledState || device.State == model.InactiveDisabledState {
 		// 设备为禁用状态，只更新下线时间
-		if tx := database.Database.Orm().Model(&model.Device{
+		if tx := repository.Database.Orm().Model(&model.Device{
 			ProductId: productId,
 			DeviceId:  deviceId,
 		}).Updates(map[string]interface{}{
@@ -72,7 +72,7 @@ func (m *mqtt) offline(productId string, deviceId string) {
 			logger.Error("device offline fail", zap.Error(tx.Error))
 		}
 	} else {
-		if tx := database.Database.Orm().Model(&model.Device{
+		if tx := repository.Database.Orm().Model(&model.Device{
 			ProductId: productId,
 			DeviceId:  deviceId,
 		}).Updates(map[string]interface{}{
