@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	log "github.com/fhmq/hmq/logger"
+	log "github.com/ruixiaoedu/hiot/logger"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 	"time"

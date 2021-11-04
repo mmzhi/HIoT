@@ -1,6 +1,6 @@
 package manage
 
-import "github.com/fhmq/hmq/config"
+import "github.com/ruixiaoedu/hiot/config"
 
 type _config struct {
 	Port     int    // 端口

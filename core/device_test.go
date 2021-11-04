@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/fhmq/hmq/model"
+	"github.com/ruixiaoedu/hiot/model"
 	"testing"
 )
 

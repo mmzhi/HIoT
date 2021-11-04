@@ -2,8 +2,8 @@ package repository
 
 import (
 	"errors"
-	"github.com/fhmq/hmq/model"
 	"github.com/mattn/go-sqlite3"
+	"github.com/ruixiaoedu/hiot/model"
 	"gorm.io/gorm"
 	"strings"
 )

@@ -2,9 +2,9 @@ package core
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/core/broker"
-	"github.com/fhmq/hmq/model"
-	"github.com/fhmq/hmq/repository"
+	"github.com/ruixiaoedu/hiot/core/broker"
+	"github.com/ruixiaoedu/hiot/model"
+	"github.com/ruixiaoedu/hiot/repository"
 	"regexp"
 	"strings"
 )

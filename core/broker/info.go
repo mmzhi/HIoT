@@ -2,10 +2,10 @@ package broker
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/config"
+	"github.com/ruixiaoedu/hiot/config"
 	"time"
 
-	log "github.com/fhmq/hmq/logger"
+	log "github.com/ruixiaoedu/hiot/logger"
 
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/eclipse/paho.mqtt.golang/packets"

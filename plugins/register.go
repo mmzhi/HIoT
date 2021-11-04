@@ -2,7 +2,7 @@ package plugins
 
 import (
 	"fmt"
-	log "github.com/fhmq/hmq/logger"
+	log "github.com/ruixiaoedu/hiot/logger"
 	"go.uber.org/zap"
 	"io"
 	"strings"

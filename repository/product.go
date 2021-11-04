@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/fhmq/hmq/model"
+	"github.com/ruixiaoedu/hiot/model"
 	"gorm.io/gorm"
 	"math"
 )

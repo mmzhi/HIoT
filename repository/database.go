@@ -2,8 +2,8 @@ package repository
 
 import (
 	"errors"
-	"github.com/fhmq/hmq/config"
-	"github.com/fhmq/hmq/model"
+	"github.com/ruixiaoedu/hiot/config"
+	"github.com/ruixiaoedu/hiot/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

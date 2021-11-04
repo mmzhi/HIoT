@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/fhmq/hmq/config"
-	"github.com/fhmq/hmq/core"
-	"github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/plugins/manage"
-	"github.com/fhmq/hmq/repository"
+	"github.com/ruixiaoedu/hiot/config"
+	"github.com/ruixiaoedu/hiot/core"
+	"github.com/ruixiaoedu/hiot/logger"
+	"github.com/ruixiaoedu/hiot/plugins/manage"
+	"github.com/ruixiaoedu/hiot/repository"
 	"go.uber.org/zap"
 	"log"
 	"os"

@@ -2,10 +2,10 @@ package manage
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/model"
-	"github.com/fhmq/hmq/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/ruixiaoedu/hiot/model"
+	"github.com/ruixiaoedu/hiot/repository"
 	"math/rand"
 	"net/http"
 	"strconv"

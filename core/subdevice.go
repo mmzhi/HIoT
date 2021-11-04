@@ -2,9 +2,9 @@ package core
 
 import (
 	"encoding/json"
-	"github.com/fhmq/hmq/logger"
-	"github.com/fhmq/hmq/model"
-	"github.com/fhmq/hmq/repository"
+	"github.com/ruixiaoedu/hiot/logger"
+	"github.com/ruixiaoedu/hiot/model"
+	"github.com/ruixiaoedu/hiot/repository"
 	"go.uber.org/zap"
 	"time"
 )

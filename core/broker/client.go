@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	sessions2 "github.com/fhmq/hmq/core/broker/lib/sessions"
-	topics2 "github.com/fhmq/hmq/core/broker/lib/topics"
+	sessions2 "github.com/ruixiaoedu/hiot/core/broker/lib/sessions"
+	topics2 "github.com/ruixiaoedu/hiot/core/broker/lib/topics"
 	"math/rand"
 	"net"
 	"reflect"
@@ -17,7 +17,7 @@ import (
 
 	"github.com/eapache/queue"
 
-	log "github.com/fhmq/hmq/logger"
+	log "github.com/ruixiaoedu/hiot/logger"
 	"golang.org/x/net/websocket"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"

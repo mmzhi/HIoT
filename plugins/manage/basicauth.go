@@ -2,8 +2,8 @@ package manage
 
 import (
 	"encoding/base64"
-	"github.com/fhmq/hmq/model"
 	"github.com/gin-gonic/gin"
+	"github.com/ruixiaoedu/hiot/model"
 	"net/http"
 	"strings"
 )

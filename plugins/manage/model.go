@@ -2,7 +2,7 @@ package manage
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/model"
+	"github.com/ruixiaoedu/hiot/model"
 	"strings"
 	"time"
 )

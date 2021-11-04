@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/fhmq/hmq/core/broker"
-	log "github.com/fhmq/hmq/logger"
+	"github.com/ruixiaoedu/hiot/core/broker"
+	log "github.com/ruixiaoedu/hiot/logger"
 	"go.uber.org/zap"
 )
 

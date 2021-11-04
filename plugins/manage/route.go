@@ -2,8 +2,8 @@ package manage
 
 import (
 	"fmt"
-	"github.com/fhmq/hmq/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/ruixiaoedu/hiot/logger"
 	"go.uber.org/zap"
 )
 
