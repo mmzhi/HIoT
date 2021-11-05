@@ -6,7 +6,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	_ "github.com/mcuadros/go-defaults"
 	"github.com/ruixiaoedu/hiot/model"
-	"github.com/ruixiaoedu/hiot/repository"
 	"github.com/ruixiaoedu/hiot/utils"
 	"net/http"
 	"strconv"
@@ -59,7 +58,7 @@ func (ctr *ProductController) add(c *gin.Context) {
 		product.ProductId = *req.ProductId
 	}
 
-	err := repository.DB.Product().Add(&product)
+	err := ctr.engine.DB().Product().Add(&product)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -86,7 +85,7 @@ func (ctr *ProductController) update(c *gin.Context) {
 
 	var productId = c.Param("productId")
 
-	err := repository.DB.Product().Update(&model.Product{
+	err := ctr.engine.DB().Product().Update(&model.Product{
 		ProductId:   productId,
 		ProductName: *req.ProductName,
 	})
@@ -117,7 +116,7 @@ func (ctr *ProductController) list(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
 	pageCurrent, _ := strconv.Atoi(c.Query("pageCurrent"))
 
-	products, page, err := repository.DB.Product().List(model.Page{
+	products, page, err := ctr.engine.DB().Product().List(model.Page{
 		Current: pageCurrent,
 		Size:    pageSize,
 	})
@@ -158,7 +157,7 @@ type ProductGetResponse struct {
 func (ctr *ProductController) get(c *gin.Context) {
 	var productId = c.Param("productId")
 
-	product, err := repository.DB.Product().Get(productId)
+	product, err := ctr.engine.DB().Product().Get(productId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -175,7 +174,7 @@ func (ctr *ProductController) get(c *gin.Context) {
 func (ctr *ProductController) delete(c *gin.Context) {
 	var productId = c.Param("productId")
 
-	err := repository.DB.Product().Delete(productId)
+	err := ctr.engine.DB().Product().Delete(productId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return

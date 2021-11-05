@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/ruixiaoedu/hiot/adapter"
-	"github.com/ruixiaoedu/hiot/config"
 	"github.com/ruixiaoedu/hiot/logger"
 	"go.uber.org/zap"
 )
@@ -44,7 +43,7 @@ func NewManage(engine adapter.Engine) IManage {
 
 // Run 运行
 func (e *manage) Run() {
-	err := e.gin.Run(fmt.Sprintf("0.0.0.0:%d", config.Config.Manage.Port))
+	err := e.gin.Run(fmt.Sprintf("0.0.0.0:%d", e.engine.Config().Manage.Port))
 	if err != nil {
 		logger.Fatal("http manage error", zap.Error(err))
 	}

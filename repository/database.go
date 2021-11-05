@@ -9,13 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// IDatabase 数据库接口
-type IDatabase interface {
+// Database 数据库接口
+type Database interface {
 	Product() IProduct
 	Device() IDevice
 }
-
-var DB IDatabase
 
 // Type 数据库类型，目前仅支持两种，mysql和sqlite
 type Type string
@@ -38,31 +36,31 @@ func (db *db) Device() IDevice {
 	return db.device
 }
 
-// InitDatabase 新建数据库对象
-func InitDatabase(cfg config.Database) (err error) {
+// NewDatabase 新建数据库对象
+func NewDatabase(cfg config.Database) (DB Database, err error) {
 	var orm *gorm.DB
 	switch Type(cfg.Type) {
 	case SQLiteType:
 	case "":
 		if orm, err = initSqlite(cfg); err != nil {
-			return err
+			return nil, err
 		}
 	case MySQLType:
 		if orm, err = initMysql(cfg); err != nil {
-			return err
+			return nil, err
 		}
 	default:
-		return errors.New("unsupported repository type")
+		return nil, errors.New("unsupported repository type")
 	}
 	err = orm.AutoMigrate(&model.Product{}, &model.Device{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	DB = &db{
 		product: NewProduct(orm),
 		device:  NewDevice(orm),
 	}
-	return nil
+	return DB, nil
 }
 
 // initMysql 初始化sqlite引擎

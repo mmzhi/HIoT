@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ruixiaoedu/hiot/core/broker"
 	"github.com/ruixiaoedu/hiot/model"
-	"github.com/ruixiaoedu/hiot/repository"
 	"regexp"
 	"strings"
 )
@@ -33,7 +32,7 @@ func (m *Core) OnClientAuthenticate(clientID, username, password string) bool {
 	}
 
 	// 从数据库获取数据
-	deviceDo, err := repository.DB.Device().Get(productId, deviceId)
+	deviceDo, err := m.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		return false
 	}
@@ -77,7 +76,7 @@ func (m *Core) OnClientCheckAcl(clientID, username, topic string, action broker.
 	}
 
 	// 从数据库获取数据
-	deviceDo, err := repository.DB.Device().Get(productId, deviceId)
+	deviceDo, err := m.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		return false
 	}
@@ -122,7 +121,7 @@ func (m *Core) OnClientCheckAcl(clientID, username, topic string, action broker.
 
 		var subProductId, subDeviceId = params[0], params[1]
 
-		subDeviceDo, err := repository.DB.Device().GetSubdevice(productId, deviceId, subProductId, subDeviceId)
+		subDeviceDo, err := m.engine.DB().Device().GetSubdevice(productId, deviceId, subProductId, subDeviceId)
 		if err != nil {
 			return false
 		}

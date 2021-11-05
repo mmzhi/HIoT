@@ -16,6 +16,9 @@ import (
 type engine struct {
 	core   adapter.Core
 	manage adapter.Manage
+
+	config *config.Config
+	db     repository.Database
 }
 
 func (e *engine) Core() adapter.Core {
@@ -26,14 +29,25 @@ func (e *engine) Manage() adapter.Manage {
 	return e.manage
 }
 
+func (e *engine) Config() *config.Config {
+	return e.config
+}
+
+func (e *engine) DB() repository.Database {
+	return e.db
+}
+
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	e := engine{}
+
 	// 初始化 配置
-	cfg, err := config.Configure()
+	cfg, err := config.NewConfigure()
 	if err != nil {
 		logger.Fatal("configure broker config error: ", zap.Error(err))
 	}
+	e.config = cfg
 
 	// 配置日志
 	if cfg.Debug {
@@ -43,12 +57,11 @@ func main() {
 	}
 
 	// 初始化 数据库
-	err = repository.InitDatabase(cfg.Database)
+	db, err := repository.NewDatabase(cfg.Database)
 	if err != nil {
 		logger.Fatal("init repository error", zap.Error(err))
 	}
-
-	e := engine{}
+	e.db = db
 
 	// 初始化 MQTT
 	c, err := core.NewCore(&e)

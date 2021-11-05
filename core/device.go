@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ruixiaoedu/hiot/model"
-	"github.com/ruixiaoedu/hiot/repository"
 	"regexp"
 	"strconv"
 	"strings"
@@ -76,7 +75,7 @@ func (m *deviceController) getConfig(message RequestMessage) ResponseMessage {
 		return nil // 不作处理
 	}
 
-	config, err := repository.DB.Device().GetConfig(productId, deviceId)
+	config, err := m.engine.DB().Device().GetConfig(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	}

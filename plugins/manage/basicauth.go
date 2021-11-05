@@ -3,7 +3,6 @@ package manage
 import (
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
-	"github.com/ruixiaoedu/hiot/config"
 	"github.com/ruixiaoedu/hiot/model"
 	"net/http"
 	"strings"
@@ -13,9 +12,11 @@ import (
 
 // BasicAuth 授权方法
 func (e *manage) BasicAuth() gin.HandlerFunc {
+	var un = e.engine.Config().Manage.Username
+	var pwd = e.engine.Config().Manage.Password
 	return func(c *gin.Context) {
 		auth, username, password := decodeAuthorization(c.Request.Header.Get("Authorization"))
-		if !auth || username != config.Config.Manage.Username || password != config.Config.Manage.Password {
+		if !auth || username != un || password != pwd {
 			c.Header("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, failWithError(model.ErrPermissionDenied))
 			return

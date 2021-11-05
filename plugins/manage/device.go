@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/ruixiaoedu/hiot/model"
-	"github.com/ruixiaoedu/hiot/repository"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -73,12 +72,12 @@ func (ctr *DeviceController) add(c *gin.Context) {
 		product *model.Product
 		err     error
 	)
-	if product, err = repository.DB.Product().Get(productId); err != nil {
+	if product, err = ctr.engine.DB().Product().Get(productId); err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
-	if err := repository.DB.Device().Add(&model.Device{
+	if err := ctr.engine.DB().Device().Add(&model.Device{
 		ProductId: product.ProductId,
 		DeviceId:  *req.DeviceId,
 
@@ -114,7 +113,7 @@ func (ctr *DeviceController) update(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	err := repository.DB.Device().Update(&model.Device{
+	err := ctr.engine.DB().Device().Update(&model.Device{
 		ProductId:  productId,
 		DeviceId:   deviceId,
 		DeviceName: *req.DeviceName,
@@ -153,7 +152,7 @@ func (ctr *DeviceController) get(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	device, err := repository.DB.Device().Get(productId, deviceId)
+	device, err := ctr.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -211,7 +210,7 @@ func (ctr *DeviceController) list(c *gin.Context) {
 	pageCurrent, _ := strconv.Atoi(c.Query("pageCurrent"))
 
 	var productId = c.Query("productId")
-	devices, page, err := repository.DB.Device().List(model.Page{
+	devices, page, err := ctr.engine.DB().Device().List(model.Page{
 		Current: pageCurrent,
 		Size:    pageSize,
 	}, &model.Device{
@@ -262,7 +261,7 @@ func (ctr *DeviceController) delete(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	err := repository.DB.Device().Delete(productId, deviceId)
+	err := ctr.engine.DB().Device().Delete(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -277,7 +276,7 @@ func (ctr *DeviceController) enable(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	device, err := repository.DB.Device().Get(productId, deviceId)
+	device, err := ctr.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -287,12 +286,12 @@ func (ctr *DeviceController) enable(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, fail(0, "State is not support"))
 		return
 	} else if device.State == model.DisabledState { // 禁用
-		if err := repository.DB.Device().UpdateState(productId, deviceId, model.OfflineState); err != nil {
+		if err := ctr.engine.DB().Device().UpdateState(productId, deviceId, model.OfflineState); err != nil {
 			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
 	} else { // 禁用且未激活
-		if err := repository.DB.Device().UpdateState(productId, deviceId, model.InactiveState); err != nil {
+		if err := ctr.engine.DB().Device().UpdateState(productId, deviceId, model.InactiveState); err != nil {
 			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
@@ -307,7 +306,7 @@ func (ctr *DeviceController) disable(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	device, err := repository.DB.Device().Get(productId, deviceId)
+	device, err := ctr.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -317,12 +316,12 @@ func (ctr *DeviceController) disable(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, fail(0, "State is not support"))
 		return
 	} else if device.State == model.InactiveState { // 未激活
-		if err := repository.DB.Device().UpdateState(productId, deviceId, model.InactiveDisabledState); err != nil {
+		if err := ctr.engine.DB().Device().UpdateState(productId, deviceId, model.InactiveDisabledState); err != nil {
 			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
 	} else { // 其余状态
-		if err := repository.DB.Device().UpdateState(productId, deviceId, model.DisabledState); err != nil {
+		if err := ctr.engine.DB().Device().UpdateState(productId, deviceId, model.DisabledState); err != nil {
 			c.JSON(http.StatusBadRequest, failWithError(err))
 			return
 		}
@@ -342,7 +341,7 @@ func (ctr *DeviceController) getConfig(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	config, err := repository.DB.Device().GetConfig(productId, deviceId)
+	config, err := ctr.engine.DB().Device().GetConfig(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -373,7 +372,7 @@ func (ctr *DeviceController) updateConfig(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	err := repository.DB.Device().UpdateConfig(productId, deviceId, req.Config)
+	err := ctr.engine.DB().Device().UpdateConfig(productId, deviceId, req.Config)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -393,7 +392,7 @@ func (ctr *DeviceController) getTopology(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	device, err := repository.DB.Device().Get(productId, deviceId)
+	device, err := ctr.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -426,7 +425,7 @@ func (ctr *DeviceController) updateTopology(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	subDevice, err := repository.DB.Device().Get(productId, deviceId)
+	subDevice, err := ctr.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -437,13 +436,13 @@ func (ctr *DeviceController) updateTopology(c *gin.Context) {
 
 	// TODO 下线子设备
 
-	_, err = repository.DB.Device().Get(*req.GatewayProductId, *req.GatewayDeviceId)
+	_, err = ctr.engine.DB().Device().Get(*req.GatewayProductId, *req.GatewayDeviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
 	}
 
-	err = repository.DB.Device().UpdateGateway(productId, deviceId, req.GatewayProductId, req.GatewayDeviceId)
+	err = ctr.engine.DB().Device().UpdateGateway(productId, deviceId, req.GatewayProductId, req.GatewayDeviceId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -457,7 +456,7 @@ func (ctr *DeviceController) removeTopology(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	err := repository.DB.Device().UpdateGateway(productId, deviceId, nil, nil)
+	err := ctr.engine.DB().Device().UpdateGateway(productId, deviceId, nil, nil)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return
@@ -471,7 +470,7 @@ func (ctr *DeviceController) reset(c *gin.Context) {
 	var productId = c.Param("productId")
 	var deviceId = c.Param("deviceId")
 
-	err := repository.DB.Device().UpdateSecret(productId, deviceId, ctr.generateSecret())
+	err := ctr.engine.DB().Device().UpdateSecret(productId, deviceId, ctr.generateSecret())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, failWithError(err))
 		return

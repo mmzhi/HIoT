@@ -12,7 +12,13 @@ import (
 	"io/ioutil"
 )
 
-type ConfigOptions struct {
+const (
+	DefaultWorkNum = 4096
+	DefaultHost    = "0.0.0.0"
+	DefaultPort    = "1883"
+)
+
+type Config struct {
 	WorkerNum int `json:"workerNum"`
 
 	Host string `json:"host"`
@@ -58,38 +64,35 @@ type TLSInfo struct {
 	KeyFile  string `json:"keyFile"`
 }
 
-var Config = &ConfigOptions{
-	WorkerNum: 4096,
-	Host:      "0.0.0.0",
-	Port:      "1883",
-}
-
-// Configure 配置配置文件
-func Configure() (*ConfigOptions, error) {
+// NewConfigure 配置配置文件
+func NewConfigure() (*Config, error) {
+	// 默认配置
+	var config = &Config{
+		WorkerNum: DefaultWorkNum,
+		Host:      DefaultHost,
+		Port:      DefaultPort,
+	}
 
 	// 从 flag 获取配置
-	config, err := LoadFlag(Config)
-	if err != nil {
+	if err := config.LoadFlag(); err != nil {
 		return nil, err
 	}
 
 	// 从文件中获取配置
-	config, err = LoadConfig(config)
-	if err != nil {
+	if err := config.LoadFile(); err != nil {
 		return nil, err
 	}
 
 	// 检查配置是否正确
-	if err := config.check(); err != nil {
+	if err := config.Check(); err != nil {
 		return nil, err
 	}
 
 	return config, nil
-
 }
 
 // LoadFlag 解析命令行命令
-func LoadFlag(config *ConfigOptions) (*ConfigOptions, error) {
+func (config *Config) LoadFlag() error {
 
 	var configFile string // 配置文件
 
@@ -121,11 +124,11 @@ func LoadFlag(config *ConfigOptions) (*ConfigOptions, error) {
 		viper.SetConfigFile(configFile)
 	}
 
-	return config, nil
+	return nil
 }
 
-// LoadConfig 解析本地配置文件
-func LoadConfig(config *ConfigOptions) (*ConfigOptions, error) {
+// LoadFile 解析本地配置文件
+func (config *Config) LoadFile() error {
 
 	// 没有设置配置文件，加载本地指定目录
 	if viper.ConfigFileUsed() == "" {
@@ -138,22 +141,22 @@ func LoadConfig(config *ConfigOptions) (*ConfigOptions, error) {
 		// 如果没有配置文件，返回原始内容
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired
-			return config, nil
+			return nil
 		}
 		// Config file was found but another error was produced
-		return nil, err
+		return err
 	}
 
 	// 配置文件存在，转化配置文件
 	if err := viper.Unmarshal(config); err != nil {
-		return nil, err
+		return err
 	}
 
-	return config, nil
+	return nil
 }
 
-// check 检查配置文件是否正确
-func (config *ConfigOptions) check() error {
+// Check 检查配置文件是否正确
+func (config *Config) Check() error {
 
 	if config.WorkerNum == 0 {
 		config.WorkerNum = 1024

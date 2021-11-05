@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/ruixiaoedu/hiot/logger"
 	"github.com/ruixiaoedu/hiot/model"
-	"github.com/ruixiaoedu/hiot/repository"
 	"go.uber.org/zap"
 )
 
@@ -35,7 +34,7 @@ func (m *subdeviceController) getList(message RequestMessage) ResponseMessage {
 	}
 
 	// 检验是否网关设备，日后在topic订阅时便删除
-	device, err := repository.DB.Device().Get(productId, deviceId)
+	device, err := m.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	} else if device.ProductType != model.GatewayType {
@@ -43,7 +42,7 @@ func (m *subdeviceController) getList(message RequestMessage) ResponseMessage {
 	}
 
 	var subdevices []model.Device
-	if subdevices, err = repository.DB.Device().ListEnableSubdevice(productId, deviceId); err != nil {
+	if subdevices, err = m.engine.DB().Device().ListEnableSubdevice(productId, deviceId); err != nil {
 		return nil // TODO 暂时不作处理
 	}
 
@@ -81,14 +80,14 @@ func (m *subdeviceController) login(message RequestMessage) ResponseMessage {
 	}
 
 	// 检验是否网关设备，日后在topic订阅时便删除
-	device, err := repository.DB.Device().Get(productId, deviceId)
+	device, err := m.engine.DB().Device().Get(productId, deviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	} else if device.ProductType != model.GatewayType {
 		return nil // TODO 暂时不作处理
 	}
 
-	subdevice, err := repository.DB.Device().
+	subdevice, err := m.engine.DB().Device().
 		GetSubdevice(productId, deviceId, payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
@@ -97,7 +96,7 @@ func (m *subdeviceController) login(message RequestMessage) ResponseMessage {
 		return nil // TODO 暂时不作处理
 	}
 
-	if err := repository.DB.Device().Online(subdevice, *device.IpAddress); err != nil {
+	if err := m.engine.DB().Device().Online(subdevice, *device.IpAddress); err != nil {
 		logger.Error("subdevice online fail", zap.Error(err))
 		return nil // TODO 暂时不作处理
 	}
@@ -124,7 +123,7 @@ func (m *subdeviceController) logout(message RequestMessage) ResponseMessage {
 		return nil // 不作处理
 	}
 
-	subdevice, err := repository.DB.Device().
+	subdevice, err := m.engine.DB().Device().
 		GetSubdevice(productId, deviceId, payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
@@ -133,7 +132,7 @@ func (m *subdeviceController) logout(message RequestMessage) ResponseMessage {
 		return nil // TODO 暂时不作处理
 	}
 
-	if err := repository.DB.Device().Offline(subdevice); err != nil {
+	if err := m.engine.DB().Device().Offline(subdevice); err != nil {
 		logger.Error("subdevice offline fail", zap.Error(err))
 		return nil // TODO 暂时不作处理
 	}
@@ -160,7 +159,7 @@ func (m *subdeviceController) getConfig(message RequestMessage) ResponseMessage 
 		return nil // 不作处理
 	}
 
-	subdevice, err := repository.DB.Device().
+	subdevice, err := m.engine.DB().Device().
 		GetSubdevice(productId, deviceId, payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
@@ -169,7 +168,7 @@ func (m *subdeviceController) getConfig(message RequestMessage) ResponseMessage 
 		return nil // TODO 暂时不作处理
 	}
 
-	config, err := repository.DB.Device().GetConfig(payload.Data.ProductId, payload.Data.DeviceId)
+	config, err := m.engine.DB().Device().GetConfig(payload.Data.ProductId, payload.Data.DeviceId)
 	if err != nil {
 		return nil // TODO 暂时不作处理
 	}

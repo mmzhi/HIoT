@@ -32,6 +32,7 @@ type Message struct {
 type Broker struct {
 	id          string
 	mu          sync.Mutex
+	config      *config.Config
 	tlsConfig   *tls.Config
 	wpool       *pool.WorkerPool
 	clients     sync.Map
@@ -54,11 +55,13 @@ func newMessagePool() []chan *Message {
 	return pool
 }
 
-func NewBroker(things Things) (*Broker, error) {
+func NewBroker(cfg *config.Config, things Things) (*Broker, error) {
 	b := &Broker{
 		id: utils.GenUniqueId(),
 
-		wpool:       pool.New(config.Config.WorkerNum),
+		config: cfg,
+
+		wpool:       pool.New(cfg.WorkerNum),
 		nodes:       make(map[string]interface{}),
 		clusterPool: make(chan *Message),
 
@@ -78,13 +81,13 @@ func NewBroker(things Things) (*Broker, error) {
 		return nil, err
 	}
 
-	if config.Config.TlsPort != "" {
-		tlsconfig, err := config.NewTLSConfig(config.Config.TlsInfo)
+	if cfg.TlsPort != "" {
+		tlsConfig, err := config.NewTLSConfig(cfg.TlsInfo)
 		if err != nil {
 			log.Error("new tlsConfig error", zap.Error(err))
 			return nil, err
 		}
-		b.tlsConfig = tlsconfig
+		b.tlsConfig = tlsConfig
 	}
 
 	return b, nil
@@ -92,7 +95,7 @@ func NewBroker(things Things) (*Broker, error) {
 
 func (b *Broker) SubmitWork(clientId string, msg *Message) {
 	if b.wpool == nil {
-		b.wpool = pool.New(config.Config.WorkerNum)
+		b.wpool = pool.New(b.config.WorkerNum)
 	}
 
 	if msg.client.typ == CLUSTER {
@@ -112,27 +115,27 @@ func (b *Broker) Run() {
 	}
 
 	//listen client over tcp
-	if config.Config.Port != "" {
+	if b.config.Port != "" {
 		go b.StartClientListening(false)
 	}
 
 	//listen for cluster
-	if config.Config.Cluster.Port != "" {
+	if b.config.Cluster.Port != "" {
 		go b.StartClusterListening()
 	}
 
 	//listen for websocket
-	if config.Config.WsPort != "" {
+	if b.config.WsPort != "" {
 		go b.StartWebsocketListening()
 	}
 
 	//listen client over tls
-	if config.Config.TlsPort != "" {
+	if b.config.TlsPort != "" {
 		go b.StartClientListening(true)
 	}
 
 	//connect on other node in cluster
-	if config.Config.Router != "" {
+	if b.config.Router != "" {
 		go b.processClusterInfo()
 		b.ConnectToDiscovery()
 	}
@@ -140,15 +143,15 @@ func (b *Broker) Run() {
 }
 
 func (b *Broker) StartWebsocketListening() {
-	path := config.Config.WsPath
-	hp := ":" + config.Config.WsPort
+	path := b.config.WsPath
+	hp := ":" + b.config.WsPort
 	log.Info("Start Websocket Listener on:", zap.String("hp", hp), zap.String("path", path))
 	ws := &websocket.Server{Handler: websocket.Handler(b.wsHandler)}
 	mux := http.NewServeMux()
 	mux.Handle(path, ws)
 	var err error
-	if config.Config.WsTLS {
-		err = http.ListenAndServeTLS(hp, config.Config.TlsInfo.CertFile, config.Config.TlsInfo.KeyFile, mux)
+	if b.config.WsTLS {
+		err = http.ListenAndServeTLS(hp, b.config.TlsInfo.CertFile, b.config.TlsInfo.KeyFile, mux)
 	} else {
 		err = http.ListenAndServe(hp, mux)
 	}
@@ -172,11 +175,11 @@ func (b *Broker) StartClientListening(Tls bool) {
 	// configured on the interface.
 	for {
 		if Tls {
-			hp := config.Config.TlsHost + ":" + config.Config.TlsPort
+			hp := b.config.TlsHost + ":" + b.config.TlsPort
 			l, err = tls.Listen("tcp", hp, b.tlsConfig)
 			log.Info("Start TLS Listening client on ", zap.String("hp", hp))
 		} else {
-			hp := config.Config.Host + ":" + config.Config.Port
+			hp := b.config.Host + ":" + b.config.Port
 			l, err = net.Listen("tcp", hp)
 			log.Info("Start Listening client on ", zap.String("hp", hp))
 		}
@@ -211,7 +214,7 @@ func (b *Broker) StartClientListening(Tls bool) {
 }
 
 func (b *Broker) StartClusterListening() {
-	var hp string = config.Config.Cluster.Host + ":" + config.Config.Cluster.Port
+	var hp string = b.config.Cluster.Host + ":" + b.config.Cluster.Port
 	log.Info("Start Listening cluster on ", zap.String("hp", hp))
 
 	l, e := net.Listen("tcp", hp)
@@ -374,7 +377,7 @@ func (b *Broker) ConnectToDiscovery() {
 	var err error
 	var tempDelay time.Duration = 0
 	for {
-		conn, err = net.Dial("tcp", config.Config.Router)
+		conn, err = net.Dial("tcp", b.config.Router)
 		if err != nil {
 			log.Error("Error trying to connect to route: ", zap.Error(err))
 			log.Debug("Connect to route timeout ,retry...")
@@ -393,7 +396,7 @@ func (b *Broker) ConnectToDiscovery() {
 		}
 		break
 	}
-	log.Debug("connect to router success :", zap.String("Router", config.Config.Router))
+	log.Debug("connect to router success :", zap.String("Router", b.config.Router))
 
 	cid := b.id
 	info := info{

@@ -2,7 +2,6 @@ package broker
 
 import (
 	"fmt"
-	"github.com/ruixiaoedu/hiot/config"
 	"time"
 
 	log "github.com/ruixiaoedu/hiot/logger"
@@ -16,7 +15,7 @@ func (c *client) SendInfo() {
 	if c.status == Disconnected {
 		return
 	}
-	url := c.info.localIP + ":" + config.Config.Cluster.Port
+	url := c.info.localIP + ":" + c.broker.config.Cluster.Port
 
 	infoMsg := NewInfo(c.broker.id, url, false)
 	err := c.WriterPacket(infoMsg)

@@ -3,7 +3,6 @@ package core
 import (
 	"github.com/ruixiaoedu/hiot/logger"
 	"github.com/ruixiaoedu/hiot/model"
-	"github.com/ruixiaoedu/hiot/repository"
 	"go.uber.org/zap"
 	"strings"
 )
@@ -15,7 +14,7 @@ func (m *Core) OnClientConnected(clientID, ipaddress string) {
 		return
 	}
 
-	if err := repository.DB.Device().Online(&model.Device{
+	if err := m.engine.DB().Device().Online(&model.Device{
 		ProductId: pd[0],
 		DeviceId:  pd[1],
 	}, ipaddress); err != nil {
@@ -32,7 +31,7 @@ func (m *Core) OnClientDisconnected(clientID string) {
 	}
 
 	// 下线设备
-	if err := repository.DB.Device().Offline(&model.Device{
+	if err := m.engine.DB().Device().Offline(&model.Device{
 		ProductId: pd[0],
 		DeviceId:  pd[1],
 	}); err != nil {

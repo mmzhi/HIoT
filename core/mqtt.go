@@ -10,17 +10,19 @@ import (
 // Core 用于处理broker与物联网之间的业务
 type Core struct {
 	broker *broker.Broker
+
+	engine adapter.Engine
 	router *router
 }
 
 // NewCore 创建一个mqtt服务
 func NewCore(engine adapter.Engine) (*Core, error) {
-	var (
-		core Core
-		err  error
-	)
+	core := Core{
+		engine: engine,
+	}
 
-	if core.broker, err = broker.NewBroker(&core); err != nil {
+	var err error
+	if core.broker, err = broker.NewBroker(engine.Config(), &core); err != nil {
 		log.Error("new broker error", zap.Error(err))
 		return nil, err
 	}
