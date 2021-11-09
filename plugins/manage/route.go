@@ -25,5 +25,5 @@ package manage
 // 13、解除子设备与网关的拓扑关系	DELETE	/api/v1/device/{productId}/{deviceId}/topology
 
 // 消息通信
-// 1、向指定设备发送异步消息		POST	/api/v1/message/publish
-// 2、rpc向设备发送同步消息			POST	/api/v1/message/rpc
+// 1、向指定设备发送自定义消息		POST	/api/v1/message/publish
+// 2、向指定设备发送同步消息		POST	/api/v1/message/rpc

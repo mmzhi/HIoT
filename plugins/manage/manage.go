@@ -36,6 +36,7 @@ func NewManage(engine adapter.Engine) IManage {
 		authorized := m.gin.Group("/api/v1", m.BasicAuth())
 		NewProductController(m).Routes(authorized)
 		NewDeviceController(m).Routes(authorized)
+		NewMessageController(m).Routes(authorized)
 	}
 
 	return &m

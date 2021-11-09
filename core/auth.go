@@ -1,16 +1,9 @@
 package core
 
 import (
-	"fmt"
 	"github.com/ruixiaoedu/hiot/core/broker"
 	"github.com/ruixiaoedu/hiot/model"
-	"regexp"
 	"strings"
-)
-
-var (
-	sysTopicRegexp  = regexp.MustCompile(`^sys/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
-	userTopicRegexp = regexp.MustCompile(`^user/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
 )
 
 // OnClientAuthenticate 检测连接是否授权
@@ -57,6 +50,7 @@ func (m *Core) OnClientAuthenticate(clientID, username, password string) bool {
 }
 
 // OnClientCheckAcl 检测连接是否授权
+// 1、解析topic中的productId和deviceId
 func (m *Core) OnClientCheckAcl(clientID, username, topic string, action broker.AccessType) bool {
 
 	if clientID != username {
@@ -92,48 +86,30 @@ func (m *Core) OnClientCheckAcl(clientID, username, topic string, action broker.
 		return false
 	}
 
-	// 假如是设备或者网关，对于自身的topic处理
-	if deviceDo.ProductType == model.DeviceType || deviceDo.ProductType == model.GatewayType {
-
-		// 符合系统topic，返回
-		if strings.HasPrefix(topic, fmt.Sprintf("sys/%s/%s/", deviceDo.ProductId, deviceDo.DeviceId)) {
-			return true
-		}
-
-		// 符合用户自定义，返回true
-		if strings.HasPrefix(topic, fmt.Sprintf("user/%s/%s/", deviceDo.ProductId, deviceDo.DeviceId)) {
-			return true
-		}
+	// 解析出topic的ProductId和DeviceId
+	t := Topic(topic)
+	topicType, topicProductId, topicDeviceId, _ := t.Parse()
+	if topicType == TopicNoneType {
+		// 未知的topic类型
+		return false
 	}
 
-	// 对于是网关类型，判断是否符合其子设备的topic
-	if deviceDo.ProductType == model.GatewayType {
-		var params []string
-		// 是否符合指定topic格式
-		if params = sysTopicRegexp.FindStringSubmatch(topic); len(params) == 3 {
-			// 不处理
-		} else if params = userTopicRegexp.FindStringSubmatch(topic); len(params) == 3 {
-			// 不处理
-		} else {
-			// 都不符合，退出处理
-			goto out1
+	if topicProductId != productId || topicDeviceId != deviceId {
+		// 不一致，如果不为网关类型则返回false
+		if deviceDo.ProductType != model.GatewayType {
+			return false
 		}
 
-		var subProductId, subDeviceId = params[0], params[1]
-
-		subDeviceDo, err := m.engine.DB().Device().GetSubdevice(productId, deviceId, subProductId, subDeviceId)
+		subDeviceDo, err := m.engine.DB().Device().GetSubdevice(productId, deviceId, topicProductId, topicDeviceId)
 		if err != nil {
 			return false
-		}
-
-		if subDeviceDo.State == model.DisabledState {
-			// 子设备已被禁用，无法授权
+		} else if subDeviceDo.State != model.OnlineState {
+			// 子设备未上线，无法授权
 			return false
 		}
-
-		return true
 	}
-out1:
 
-	return false
+	// TODO 判断topics是否符合
+
+	return true
 }

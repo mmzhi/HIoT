@@ -78,6 +78,13 @@ func (*Device) TableName() string {
 	return "device"
 }
 
+// Message 消息
+type Message struct {
+	Topic   string // 地址
+	Qos     byte   // 消息Qos
+	Payload []byte // 消息内容
+}
+
 // Page 分页
 type Page struct {
 	Total   int // 总数

@@ -3,11 +3,7 @@ package core
 // 该文件实现类似mqtt.route中的功能
 
 import (
-	"github.com/eclipse/paho.mqtt.golang/packets"
-	"github.com/ruixiaoedu/hiot/logger"
-	"go.uber.org/zap"
 	"strings"
-	"sync"
 )
 
 //
@@ -58,56 +54,18 @@ func match(route []string, topic []string) bool {
 	return false
 }
 
-// router 路由管理
-type router struct {
-	*Core
-	sync.RWMutex
-	routes []route
-}
-
 // newRouter 初始化路由
-func newRouter(m *Core) *router {
+func (m *Core) initRouter() {
+
 	deviceCtl := deviceController{m}
 	subdeviceCtl := subdeviceController{m}
-	router := &router{
-		Core: m,
-		routes: []route{
-			{"sys/+/+/config/get", deviceCtl.getConfig},
 
-			{"sys/+/+/subdevice/list", subdeviceCtl.getList},
-			{"sys/+/+/subdevice/login", subdeviceCtl.login},
-			{"sys/+/+/subdevice/logout", subdeviceCtl.logout},
-			{"sys/+/+/subdevice/config/get", subdeviceCtl.getConfig},
-		},
-	}
-	return router
-}
+	m.routes = []route{
+		{"sys/+/+/config/get", deviceCtl.getConfig},
 
-// HandleMessage 处理MQTT的消息
-func (r *router) HandleMessage(clientID, topic string, data []byte) {
-	r.RLock()
-	defer r.RUnlock()
-	for _, e := range r.routes {
-		if e.match(topic) {
-			logger.Debug("match topic", zap.String("route", e.topic), zap.String("topic", topic))
-			go func() {
-				m := e.callback(&requestMessage{
-					clientID: clientID,
-					topic:    topic,
-					payload:  data,
-				})
-				if m != nil {
-					// 创建返回的消息包
-					packet := packets.NewControlPacket(packets.Publish).(*packets.PublishPacket)
-					packet.TopicName = topic + "/reply"
-					packet.Qos = m.Qos()
-					packet.Payload = m.Payload()
-
-					// 发送消息
-					r.broker.PublishMessage(packet)
-				}
-			}()
-			return
-		}
+		{"sys/+/+/subdevice/list", subdeviceCtl.getList},
+		{"sys/+/+/subdevice/login", subdeviceCtl.login},
+		{"sys/+/+/subdevice/logout", subdeviceCtl.logout},
+		{"sys/+/+/subdevice/config/get", subdeviceCtl.getConfig},
 	}
 }
