@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	sessions2 "github.com/ruixiaoedu/hiot/core/broker/lib/sessions"
-	topics2 "github.com/ruixiaoedu/hiot/core/broker/lib/topics"
 	"math/rand"
 	"net"
 	"reflect"
@@ -25,14 +24,15 @@ import (
 )
 
 const (
-	// BrokerInfoTopic special pub topic for cluster info
+	// BrokerInfoTopic 集群信息的特殊发布主题
 	BrokerInfoTopic = "broker000100101info"
-	// CLIENT is an end user.
+	// CLIENT 是终端用户
 	CLIENT = 0
-	// ROUTER is another router in the cluster.
+	// ROUTER 是集群中的另一个路由器。
 	ROUTER = 1
-	// REMOTE is the router connect to other cluster
+	// REMOTE 是连接到其他集群的路由器
 	REMOTE  = 2
+	// CLUSTER 是集群
 	CLUSTER = 3
 )
 
@@ -54,20 +54,20 @@ var (
 	groupCompile = regexp.MustCompile(_GroupTopicRegexp)
 )
 
+// MQTT 客户端
 type client struct {
-	typ            int
-	mu             sync.Mutex
-	broker         *Broker
-	conn           net.Conn
-	info           info
-	route          route
-	status         int
-	ctx            context.Context
+	typ            int								// 客户端类型
+	mu             sync.Mutex						// 数据写入锁
+	broker         *Broker							// MQTT Broker
+	conn           net.Conn							// 网络连接
+	info           info								// 客户端信息
+	route          route							// 路由信息
+	status         int								// 状态
+	ctx            context.Context					//
 	cancelFunc     context.CancelFunc
 	session        *sessions2.Session
-	subMap         map[string]*subscription
-	subMapMu       sync.RWMutex
-	topicsMgr      *topics2.Manager
+	subMap         map[string]*subscription			// 订阅列表
+	subMapMu       sync.RWMutex						//
 	subs           []interface{}
 	qoss           []byte
 	rmsgs          []*packets.PublishPacket
@@ -123,27 +123,29 @@ var (
 	r                  = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
+// init 初始化
 func (c *client) init() {
 	c.status = Connected
 	c.info.localIP, _, _ = net.SplitHostPort(c.conn.LocalAddr().String())
 	remoteAddr := c.conn.RemoteAddr()
 	remoteNetwork := remoteAddr.Network()
-	c.info.remoteIP = ""
+	// c.info.remoteIP = "" 这个是多余的，注释掉
 	if remoteNetwork != "websocket" {
 		c.info.remoteIP, _, _ = net.SplitHostPort(remoteAddr.String())
 	} else {
 		ws := c.conn.(*websocket.Conn)
 		c.info.remoteIP, _, _ = net.SplitHostPort(ws.Request().RemoteAddr)
 	}
+	// 用作取消时的通知
 	c.ctx, c.cancelFunc = context.WithCancel(context.Background())
 	c.subMap = make(map[string]*subscription)
-	c.topicsMgr = c.broker.topicsMgr
 	c.routeSubMap = make(map[string]uint64)
 	c.awaitingRel = make(map[uint16]int64)
 	c.inflight = make(map[uint16]*inflightElem)
 	c.mqueue = queue.New()
 }
 
+// readLoop 读取数据
 func (c *client) readLoop() {
 	nc := c.conn
 	b := c.broker
@@ -458,12 +460,12 @@ func (c *client) ProcessPublishMessage(packet *packets.PublishPacket) {
 	typ := c.typ
 
 	if packet.Retain {
-		if err := c.topicsMgr.Retain(packet); err != nil {
+		if err := c.broker.topicsMgr.Retain(packet); err != nil {
 			log.Error("Error retaining message: ", zap.Error(err), zap.String("ClientID", c.info.clientID))
 		}
 	}
 
-	err := c.topicsMgr.Subscribers([]byte(packet.TopicName), packet.Qos, &c.subs, &c.qoss)
+	err := c.broker.topicsMgr.Subscribers([]byte(packet.TopicName), packet.Qos, &c.subs, &c.qoss)
 	if err != nil {
 		log.Error("Error retrieving subscribers list: ", zap.String("ClientID", c.info.clientID))
 		return
@@ -486,7 +488,10 @@ func (c *client) ProcessPublishMessage(packet *packets.PublishPacket) {
 			if s.share {
 				qsub = append(qsub, i)
 			} else {
-				publish(s, packet)
+				// 如果是原发布方，该消息将不再发布给原发布方
+				if s.client != c {
+					publish(s, packet)
+				}
 			}
 
 		}
@@ -556,7 +561,7 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 
 		c.subMapMu.Lock()
 		if oldSub, exist := c.subMap[t]; exist {
-			_ = c.topicsMgr.Unsubscribe([]byte(oldSub.topic), oldSub)
+			_ = c.broker.topicsMgr.Unsubscribe([]byte(oldSub.topic), oldSub)
 			delete(c.subMap, t)
 		}
 		c.subMapMu.Unlock()
@@ -569,7 +574,7 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 			groupName: groupName,
 		}
 
-		rqos, err := c.topicsMgr.Subscribe([]byte(topic), qoss[i], sub)
+		rqos, err := c.broker.topicsMgr.Subscribe([]byte(topic), qoss[i], sub)
 		if err != nil {
 			log.Error("subscribe error, ", zap.Error(err), zap.String("ClientID", c.info.clientID))
 			retcodes = append(retcodes, QosFailure)
@@ -582,7 +587,7 @@ func (c *client) processClientSubscribe(packet *packets.SubscribePacket) {
 
 		_ = c.session.AddTopic(t, qoss[i])
 		retcodes = append(retcodes, rqos)
-		_ = c.topicsMgr.Retained([]byte(topic), &c.rmsgs)
+		_ = c.broker.topicsMgr.Retained([]byte(topic), &c.rmsgs)
 	}
 
 	suback.ReturnCodes = retcodes
@@ -645,7 +650,7 @@ func (c *client) processRouterSubscribe(packet *packets.SubscribePacket) {
 			groupName: groupName,
 		}
 
-		rqos, err := c.topicsMgr.Subscribe([]byte(topic), qoss[i], sub)
+		rqos, err := c.broker.topicsMgr.Subscribe([]byte(topic), qoss[i], sub)
 		if err != nil {
 			log.Error("subscribe error, ", zap.Error(err), zap.String("ClientID", c.info.clientID))
 			retcodes = append(retcodes, QosFailure)
@@ -702,7 +707,7 @@ func (c *client) processRouterUnSubscribe(packet *packets.UnsubscribePacket) {
 			}
 			c.routeSubMapMu.Unlock()
 
-			_ = c.topicsMgr.Unsubscribe([]byte(sub.topic), sub)
+			_ = c.broker.topicsMgr.Unsubscribe([]byte(sub.topic), sub)
 			delete(c.subMap, topic)
 		}
 		c.subMapMu.Unlock()
@@ -737,7 +742,7 @@ func (c *client) processClientUnSubscribe(packet *packets.UnsubscribePacket) {
 		c.subMapMu.Lock()
 		sub, exist := c.subMap[topic]
 		if exist {
-			_ = c.topicsMgr.Unsubscribe([]byte(sub.topic), sub)
+			_ = c.broker.topicsMgr.Unsubscribe([]byte(sub.topic), sub)
 			_ = c.session.RemoveTopic(topic)
 			delete(c.subMap, topic)
 		}

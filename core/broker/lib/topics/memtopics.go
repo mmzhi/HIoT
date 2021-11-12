@@ -20,7 +20,7 @@ var _ TopicsProvider = (*memTopics)(nil)
 type memTopics struct {
 	// Sub/unsub mutex
 	smu sync.RWMutex
-	// Subscription tree
+	// 订阅树
 	sroot *snode
 
 	// Retained message mutex
@@ -48,7 +48,7 @@ func ValidQos(qos byte) bool {
 	return qos == QosAtMostOnce || qos == QosAtLeastOnce || qos == QosExactlyOnce
 }
 
-func (this *memTopics) Subscribe(topic []byte, qos byte, sub interface{}) (byte, error) {
+func (t *memTopics) Subscribe(topic []byte, qos byte, sub interface{}) (byte, error) {
 	if !ValidQos(qos) {
 		return QosFailure, fmt.Errorf("Invalid QoS %d", qos)
 	}
@@ -57,76 +57,76 @@ func (this *memTopics) Subscribe(topic []byte, qos byte, sub interface{}) (byte,
 		return QosFailure, fmt.Errorf("Subscriber cannot be nil")
 	}
 
-	this.smu.Lock()
-	defer this.smu.Unlock()
+	t.smu.Lock()
+	defer t.smu.Unlock()
 
 	if qos > QosExactlyOnce {
 		qos = QosExactlyOnce
 	}
 
-	if err := this.sroot.sinsert(topic, qos, sub); err != nil {
+	if err := t.sroot.sinsert(topic, qos, sub); err != nil {
 		return QosFailure, err
 	}
 
 	return qos, nil
 }
 
-func (this *memTopics) Unsubscribe(topic []byte, sub interface{}) error {
-	this.smu.Lock()
-	defer this.smu.Unlock()
+func (t *memTopics) Unsubscribe(topic []byte, sub interface{}) error {
+	t.smu.Lock()
+	defer t.smu.Unlock()
 
-	return this.sroot.sremove(topic, sub)
+	return t.sroot.sremove(topic, sub)
 }
 
-// Returned values will be invalidated by the next Subscribers call
-func (this *memTopics) Subscribers(topic []byte, qos byte, subs *[]interface{}, qoss *[]byte) error {
+// Subscribers Returned values will be invalidated by the next Subscribers call
+func (t *memTopics) Subscribers(topic []byte, qos byte, subs *[]interface{}, qoss *[]byte) error {
 	if !ValidQos(qos) {
 		return fmt.Errorf("Invalid QoS %d", qos)
 	}
 
-	this.smu.RLock()
-	defer this.smu.RUnlock()
+	t.smu.RLock()
+	defer t.smu.RUnlock()
 
 	*subs = (*subs)[0:0]
 	*qoss = (*qoss)[0:0]
 
-	return this.sroot.smatch(topic, qos, subs, qoss)
+	return t.sroot.smatch(topic, qos, subs, qoss)
 }
 
-func (this *memTopics) Retain(msg *packets.PublishPacket) error {
-	this.rmu.Lock()
-	defer this.rmu.Unlock()
+func (t *memTopics) Retain(msg *packets.PublishPacket) error {
+	t.rmu.Lock()
+	defer t.rmu.Unlock()
 
 	// So apparently, at least according to the MQTT Conformance/Interoperability
 	// Testing, that a payload of 0 means delete the retain message.
 	// https://eclipse.org/paho/clients/testing/
 	if len(msg.Payload) == 0 {
-		return this.rroot.rremove([]byte(msg.TopicName))
+		return t.rroot.rremove([]byte(msg.TopicName))
 	}
 
-	return this.rroot.rinsertOrUpdate([]byte(msg.TopicName), msg)
+	return t.rroot.rinsertOrUpdate([]byte(msg.TopicName), msg)
 }
 
-func (this *memTopics) Retained(topic []byte, msgs *[]*packets.PublishPacket) error {
-	this.rmu.RLock()
-	defer this.rmu.RUnlock()
+func (t *memTopics) Retained(topic []byte, msgs *[]*packets.PublishPacket) error {
+	t.rmu.RLock()
+	defer t.rmu.RUnlock()
 
-	return this.rroot.rmatch(topic, msgs)
+	return t.rroot.rmatch(topic, msgs)
 }
 
-func (this *memTopics) Close() error {
-	this.sroot = nil
-	this.rroot = nil
+func (t *memTopics) Close() error {
+	t.sroot = nil
+	t.rroot = nil
 	return nil
 }
 
-// subscrition nodes
+// 订阅树
 type snode struct {
-	// If this is the end of the topic string, then add subscribers here
+	// 如果这是主题（topic)的结束，那么在这里添加订阅者
 	subs []interface{}
 	qos  []byte
 
-	// Otherwise add the next topic level here
+	// 否则在这里添加下一个主题级别
 	snodes map[string]*snode
 }
 
@@ -137,9 +137,10 @@ func newSNode() *snode {
 }
 
 func (this *snode) sinsert(topic []byte, qos byte, sub interface{}) error {
-	// If there's no more topic levels, that means we are at the matching snode
-	// to insert the subscriber. So let's see if there's such subscriber,
-	// if so, update it. Otherwise insert it.
+
+	// 如果没有更多的主题级别，这意味着我们在匹配的snode上插入订阅者。
+	// 是否有这样的订阅，如果有，更新它。否则插入它。
+
 	if len(topic) == 0 {
 		// Let's see if the subscriber is already on the list. If yes, update
 		// QoS and then return.
@@ -272,7 +273,7 @@ func (this *snode) smatch(topic []byte, qos byte, subs *[]interface{}, qoss *[]b
 	return nil
 }
 
-// retained message nodes
+// rnode 保留信息节点
 type rnode struct {
 	// If this is the end of the topic string, then add retained messages here
 	msg *packets.PublishPacket

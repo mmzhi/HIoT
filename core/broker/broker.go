@@ -604,6 +604,7 @@ func (b *Broker) removeClient(c *client) {
 	// log.Info("delete client ,", clientId)
 }
 
+// PublishMessage 发布信息
 func (b *Broker) PublishMessage(packet *packets.PublishPacket) {
 	var subs []interface{}
 	var qoss []byte
