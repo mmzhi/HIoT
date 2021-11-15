@@ -12,13 +12,8 @@ var (
 	// 自定义的topic正则，格式：usr/{productId}/{deviceId}/{topics...}
 	usrTopicRegexp = regexp.MustCompile(`^usr/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
 
-	// 自定义rpc请求的topic正则，格式：rpc/{messageId}/{productId}/{deviceId}/{topics...}
-	// 设备只能订阅，设备订阅其中messageId必须为通配符
-	rpcReqTopicRegexp = regexp.MustCompile(`^rpc/+/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
-
-	// 自定义rpc请求的topic正则，格式：rpc/{messageId}/{productId}/{deviceId}/{topics...}
-	// 设备只能发布
-	rpcRspTopicRegexp = regexp.MustCompile(`^rpc/([\d\w]{1,32})/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
+	// 自定义rpc请求的topic正则，格式：rpc/{messageId}/usr/{productId}/{deviceId}/{topics...}
+	rpcTopicRegexp = regexp.MustCompile(`^rpc/([\d\w]{1,32})/usr/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
 )
 
 type TopicType byte
@@ -46,8 +41,8 @@ func (t Topic) Parse() (topicType TopicType, productId string, deviceId string, 
 				return TopicUsrType, topicN[0], topicN[1], topicN[2]
 			}
 		case "rpc":
-			if topicN := strings.SplitN(topicN[1], "/", 4); len(topicN) == 4 {
-				return TopicRpcType, topicN[1], topicN[2], topicN[3]
+			if topicN := strings.SplitN(topicN[1], "/", 5); len(topicN) == 5 {
+				return TopicRpcType, topicN[2], topicN[3], topicN[4]
 			}
 		}
 	}

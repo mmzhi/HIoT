@@ -22,6 +22,7 @@ func NewMessageController(m manage) MessageController {
 func (ctr MessageController) Routes(route *gin.RouterGroup) {
 	route = route.Group("/message")
 	route.POST("/publish", ctr.publish)
+	route.POST("/rpc", ctr.rpc)
 }
 
 // MessagePublishRequest 消息发布
@@ -80,4 +81,71 @@ func (ctr *MessageController) publish(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, success(nil))
+}
+
+// MessageRpcRequest 同步消息发布
+type MessageRpcRequest struct {
+	Topic   *string `json:"topic" binding:"required"` // 要接收消息的设备的自定义Topic，格式必须为usr/{productId}/{deviceId}/{topics...}
+	Qos     *byte   `json:"qos"`                      // 指定消息的发送方式
+	Payload *string `json:"payload"`                  // 要发送的消息主体，base64编码
+}
+
+// MessageRpcResponse 同步消息发布
+type MessageRpcResponse struct {
+	Payload *string `json:"payload"` // 要回复的消息主体，base64编码
+}
+
+// publish 发布信息
+func (ctr *MessageController) rpc(c *gin.Context) {
+	var (
+		req MessageRpcRequest
+		err error
+	)
+	if err = c.ShouldBindJSON(&req); err != nil {
+		if i, ok := err.(validator.ValidationErrors); ok {
+			fmt.Println("Error" + i.Error())
+		}
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
+		return
+	}
+
+	var payload []byte
+	if req.Payload != nil && *req.Payload != "" {
+		if payload, err = base64.StdEncoding.DecodeString(*req.Payload); err != nil {
+			c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
+			return
+		}
+	}
+
+	if len(payload) > 4*1024*1024 {
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrOverLengthData))
+		return
+	}
+
+	usrRegexp := regexp.MustCompile(`^usr/([\d\w-_]{1,32})/([\d\w-_]{1,32})/`)
+	params := usrRegexp.FindStringSubmatch(*req.Topic)
+	if len(params) != 3 {
+		c.JSON(http.StatusBadRequest, failWithError(model.ErrInvalidFormat))
+		return
+	}
+	productId := params[1]
+	deviceId := params[2]
+
+	if _, err = ctr.engine.DB().Device().Get(productId, deviceId); err != nil {
+		c.JSON(http.StatusBadRequest, failWithError(err))
+		return
+	}
+
+	// 这里不检查topic可用性，由下一级检查
+	replyPayload, err := ctr.engine.Core().Rpc(*req.Topic, *req.Qos, payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, failWithError(err))
+		return
+	}
+
+	payloadBase64 := base64.StdEncoding.EncodeToString(replyPayload)
+
+	c.JSON(http.StatusOK, success(MessageRpcResponse{
+		Payload: &payloadBase64,
+	}))
 }

@@ -31,18 +31,21 @@ const (
 	// ROUTER 是集群中的另一个路由器。
 	ROUTER = 1
 	// REMOTE 是连接到其他集群的路由器
-	REMOTE  = 2
+	REMOTE = 2
 	// CLUSTER 是集群
 	CLUSTER = 3
 )
 
 const (
-	_GroupTopicRegexp = `^\$share/([0-9a-zA-Z_-]+)/(.*)$`
+	_GroupTopicRegexp = `^\$share/([0-9a-zA-Z_-]+)/(.*)$` // 共享topic
 )
 
+// ClientStatus 客户端连接状态
+type ClientStatus byte
+
 const (
-	Connected    = 1
-	Disconnected = 2
+	Connected    ClientStatus = 1 // 连接
+	Disconnected ClientStatus = 2 // 断开
 )
 
 const (
@@ -56,18 +59,18 @@ var (
 
 // MQTT 客户端
 type client struct {
-	typ            int								// 客户端类型
-	mu             sync.Mutex						// 数据写入锁
-	broker         *Broker							// MQTT Broker
-	conn           net.Conn							// 网络连接
-	info           info								// 客户端信息
-	route          route							// 路由信息
-	status         int								// 状态
-	ctx            context.Context					//
+	typ            int             // 客户端类型
+	mu             sync.Mutex      // 数据写入锁
+	broker         *Broker         // MQTT Broker
+	conn           net.Conn        // 网络连接
+	info           info            // 客户端信息
+	route          route           // 路由信息
+	status         ClientStatus    // 状态
+	ctx            context.Context //
 	cancelFunc     context.CancelFunc
 	session        *sessions2.Session
-	subMap         map[string]*subscription			// 订阅列表
-	subMapMu       sync.RWMutex						//
+	subMap         map[string]*subscription // 订阅列表
+	subMapMu       sync.RWMutex             //
 	subs           []interface{}
 	qoss           []byte
 	rmsgs          []*packets.PublishPacket
@@ -104,13 +107,13 @@ type subscription struct {
 }
 
 type info struct {
-	clientID  string
-	username  string
-	password  []byte
-	keepalive uint16
-	willMsg   *packets.PublishPacket
-	localIP   string
-	remoteIP  string
+	clientID  string                 // 客户端ID
+	username  string                 // 用户名
+	password  []byte                 // 密码
+	keepalive uint16                 // 存活时间
+	willMsg   *packets.PublishPacket // 遗嘱信息
+	localIP   string                 // 本地IP
+	remoteIP  string                 // 远程IP
 }
 
 type route struct {
@@ -161,7 +164,7 @@ func (c *client) readLoop() {
 		case <-c.ctx.Done():
 			return
 		default:
-			//add read timeout
+			// add read timeout
 			if keepAlive > 0 {
 				if err := nc.SetReadDeadline(time.Now().Add(timeOut)); err != nil {
 					log.Error("set read timeout error: ", zap.Error(err), zap.String("ClientID", c.info.clientID))
@@ -185,7 +188,7 @@ func (c *client) readLoop() {
 				return
 			}
 
-			// if packet is disconnect from client, then need to break the read packet loop and clear will msg.
+			// 如果数据包是从客户端发出的"断开连接"，则需要终止读数据的循环并清除遗嘱信息。
 			if _, isDisconnect := packet.(*packets.DisconnectPacket); isDisconnect {
 				c.info.willMsg = nil
 				c.cancelFunc()

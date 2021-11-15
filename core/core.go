@@ -10,19 +10,26 @@ import (
 
 // Core 用于处理broker与物联网之间的业务
 type Core struct {
-	broker *broker.Broker // MQTT Borker
+	// MQTT Borker
+	broker *broker.Broker
 
-	engine adapter.Engine // 系统引擎
+	// 系统引擎
+	engine adapter.Engine
 
 	// 路由信息
 	routeMutex sync.RWMutex
 	routes     []route
+
+	// RPC消息
+	rpcLock    sync.Mutex             // 并发锁
+	rpcChanMap map[string]chan []byte // 通用数据
 }
 
 // NewCore 创建一个mqtt服务
 func NewCore(engine adapter.Engine) (*Core, error) {
 	core := Core{
-		engine: engine,
+		engine:     engine,
+		rpcChanMap: make(map[string]chan []byte),
 	}
 
 	var err error
