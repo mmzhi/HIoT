@@ -39,6 +39,8 @@ type Config struct {
 
 	Database Database `json:"repository"`
 	Manage   Manage   `json:"manage"`
+
+	Rabbitmq Rabbitmq `json:"rabbitmq"`
 }
 
 type Database struct {
@@ -50,6 +52,13 @@ type Manage struct {
 	Port     int    `json:"port"`     // 管理用的HTTP端口
 	Username string `json:"username"` // 用户名
 	Password string `json:"password"` // 密码
+}
+
+type Rabbitmq struct {
+	Url           string `json:"url"`
+	Exchange      string `json:"exchange"`
+	ConnectionNum int    `json:"connectionNum"`
+	ChannelNum    int    `json:"channelNum"`
 }
 
 type RouteInfo struct {

@@ -14,6 +14,9 @@ type Engine interface {
 	// Manage 管理接口
 	Manage() Manage
 
+	// Bridge 桥接
+	Bridge() Bridge
+
 	// Config 获取配置
 	Config() *config.Config
 

@@ -18,8 +18,8 @@ tlsInfo:
   caFile: "ssl/ca/ca.pem"
   certFile: "ssl/server/cert.pem"
   keyFile: "ssl/server/key.pem"
-plugins:
-  auth: "authhttp"
-  bridge: "kafka"
+rabbitmq:
+  url: "amqp://guest:guest@172.16.0.30:5672/"
+  exchange: "test"
 database:
   dsn: root:password@tcp(127.0.0.1:3306)/hiot?charset=utf8mb4&parseTime=True&loc=Local

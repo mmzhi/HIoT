@@ -18,7 +18,7 @@ type Core struct {
 
 	// 路由信息
 	routeMutex sync.RWMutex
-	routes     []route
+	routes     []route //
 
 	// RPC消息
 	rpcLock    sync.Mutex             // 并发锁

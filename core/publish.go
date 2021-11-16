@@ -20,6 +20,8 @@ func (m *Core) OnMessagePublish(clientID, topic string, data []byte) {
 		// 处理内部信息
 		m.HandleMessage(clientID, topic, data)
 	}
+
+	_ = m.engine.Bridge().Push(topic, data)
 }
 
 // Publish 发布消息

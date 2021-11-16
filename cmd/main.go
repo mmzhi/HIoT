@@ -5,6 +5,7 @@ import (
 	"github.com/ruixiaoedu/hiot/config"
 	"github.com/ruixiaoedu/hiot/core"
 	"github.com/ruixiaoedu/hiot/logger"
+	"github.com/ruixiaoedu/hiot/plugins/bridge"
 	"github.com/ruixiaoedu/hiot/plugins/manage"
 	"github.com/ruixiaoedu/hiot/repository"
 	"go.uber.org/zap"
@@ -14,11 +15,14 @@ import (
 )
 
 type engine struct {
-	core   adapter.Core
-	manage adapter.Manage
+	core adapter.Core // 核心连接
 
-	config *config.Config
-	db     repository.Database
+	manage adapter.Manage // 管理
+
+	bridge adapter.Bridge // 消息流转
+
+	config *config.Config      // 配置
+	db     repository.Database // 数据
 }
 
 func (e *engine) Core() adapter.Core {
@@ -27,6 +31,10 @@ func (e *engine) Core() adapter.Core {
 
 func (e *engine) Manage() adapter.Manage {
 	return e.manage
+}
+
+func (e *engine) Bridge() adapter.Bridge {
+	return e.bridge
 }
 
 func (e *engine) Config() *config.Config {
@@ -75,6 +83,15 @@ func main() {
 		m := manage.NewManage(&e)
 		e.manage = m
 		go m.Run()
+	}
+
+	// 桥接设计
+	{
+		b, err := bridge.NewBridge(&e)
+		if err != nil {
+			logger.Fatal("New Bridge error: ", zap.Error(err))
+		}
+		e.bridge = b
 	}
 
 	c.Run() // 启动MQTT服务

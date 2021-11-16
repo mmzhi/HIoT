@@ -17,6 +17,7 @@ require (
 	github.com/segmentio/fasthash v0.0.0-20180216231524-a72b379d632e
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/viper v1.8.1
+	github.com/streadway/amqp v1.0.0
 	go.uber.org/zap v1.17.0
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
