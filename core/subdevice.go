@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ruixiaoedu/hiot/logger"
 	"github.com/ruixiaoedu/hiot/model"
+	"github.com/ruixiaoedu/hiot/utils"
 	"go.uber.org/zap"
 	"time"
 )
@@ -106,12 +107,20 @@ func (m *subdeviceController) login(message RequestMessage) ResponseMessage {
 	}
 
 	// 发送桥接的通知
-	clientStatusTrigger := ClientStatusTrigger{
-		State:     model.OnlineState,
-		ProductId: subdevice.ProductId,
-		DeviceId:  subdevice.DeviceId,
-		Time:      onlineTime.String(),
-		ClientIp:  device.IpAddress,
+	clientStatusTrigger := struct {
+		RequestPayload
+		Data ClientStatusTrigger `json:"data"`
+	}{
+		RequestPayload: RequestPayload{
+			Id: utils.GenUniqueId(),
+		},
+		Data: ClientStatusTrigger{
+			State:     model.OnlineState,
+			ProductId: subdevice.ProductId,
+			DeviceId:  subdevice.DeviceId,
+			Time:      onlineTime.String(),
+			IpAddress: device.IpAddress,
+		},
 	}
 	bs, _ := json.Marshal(&clientStatusTrigger)
 	m.engine.Bridge().Push("trg/"+subdevice.ProductId+"/"+subdevice.DeviceId+"/mqtt/state", bs)
@@ -156,12 +165,19 @@ func (m *subdeviceController) logout(message RequestMessage) ResponseMessage {
 	}
 
 	// 发送桥接的通知
-	clientStatusTrigger := ClientStatusTrigger{
-		State:     model.OfflineState,
-		ProductId: subdevice.ProductId,
-		DeviceId:  subdevice.DeviceId,
-		Time:      offlineTime.String(),
-	}
+	clientStatusTrigger := struct {
+		RequestPayload
+		Data ClientStatusTrigger `json:"data"`
+	}{
+		RequestPayload: RequestPayload{
+			Id: utils.GenUniqueId(),
+		},
+		Data: ClientStatusTrigger{
+			State:     model.OfflineState,
+			ProductId: subdevice.ProductId,
+			DeviceId:  subdevice.DeviceId,
+			Time:      offlineTime.String(),
+		}}
 	bs, _ := json.Marshal(&clientStatusTrigger)
 	m.engine.Bridge().Push("trg/"+subdevice.ProductId+"/"+subdevice.DeviceId+"/mqtt/state", bs)
 

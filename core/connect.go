@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ruixiaoedu/hiot/logger"
 	"github.com/ruixiaoedu/hiot/model"
+	"github.com/ruixiaoedu/hiot/utils"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -14,8 +15,8 @@ type ClientStatusTrigger struct {
 	State     model.DeviceState `json:"state"`     // 状态
 	ProductId string            `json:"productId"` // 产品id
 	DeviceId  string            `json:"deviceId"`  // 设备id
-	ClientIp  *string           `json:"clientIp"`  // 客户端ip
-	Time      string            `json:"time"`      // 发生时间
+	IpAddress *string           `json:"ipAddress"` // 客户端ip
+	Time      string            `json:"time"`      // 发生时间（如果是上线，则是上线时间，下线则是下线时间）
 }
 
 // OnClientConnected MQTT连接时通知
@@ -39,13 +40,20 @@ func (m *Core) OnClientConnected(clientID, ipaddress string) {
 	logger.Debug("client online", zap.String("clientID", clientID))
 
 	// 发送桥接的通知
-	clientStatusTrigger := ClientStatusTrigger{
-		State:     model.OnlineState,
-		ProductId: pd[0],
-		DeviceId:  pd[1],
-		Time:      onlineTime.String(),
-		ClientIp:  &ipaddress,
-	}
+	clientStatusTrigger := struct {
+		RequestPayload
+		Data ClientStatusTrigger `json:"data"`
+	}{
+		RequestPayload: RequestPayload{
+			Id: utils.GenUniqueId(),
+		},
+		Data: ClientStatusTrigger{
+			State:     model.OnlineState,
+			ProductId: pd[0],
+			DeviceId:  pd[1],
+			Time:      onlineTime.String(),
+			IpAddress: &ipaddress,
+		}}
 	bs, _ := json.Marshal(&clientStatusTrigger)
 	m.engine.Bridge().Push("trg/"+pd[0]+"/"+pd[1]+"/mqtt/state", bs)
 }
@@ -71,12 +79,19 @@ func (m *Core) OnClientDisconnected(clientID string) {
 	logger.Debug("client offline", zap.String("clientID", clientID))
 
 	// 发送桥接的通知
-	clientStatusTrigger := ClientStatusTrigger{
-		State:     model.OfflineState,
-		ProductId: pd[0],
-		DeviceId:  pd[1],
-		Time:      offlineTime.String(),
-	}
+	clientStatusTrigger := struct {
+		RequestPayload
+		Data ClientStatusTrigger `json:"data"`
+	}{
+		RequestPayload: RequestPayload{
+			Id: utils.GenUniqueId(),
+		},
+		Data: ClientStatusTrigger{
+			State:     model.OfflineState,
+			ProductId: pd[0],
+			DeviceId:  pd[1],
+			Time:      offlineTime.String(),
+		}}
 	bs, _ := json.Marshal(&clientStatusTrigger)
 	m.engine.Bridge().Push("trg/"+pd[0]+"/"+pd[1]+"/mqtt/state", bs)
 }

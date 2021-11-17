@@ -1,0 +1,34 @@
+stages:
+  - build
+  - deploy
+
+image: docker:18.04
+
+services:
+  - docker:18.04-dind
+
+before_script:
+  - export VERSION=1.0.0
+  - echo $CI_DOCKR_PSW | docker login -u $CI_DOCKR_USR --password-stdin $DOCKER_REGISTRY
+
+after_script:
+  - docker image prune -f
+  - docker logout $DOCKER_REGISTRY
+
+build_dev:
+  stage: build
+  only:
+    - /^feature\/.*$/
+  script:
+    - docker build --build-arg VERSION=$VERSION -t $IMAGE_NAME:$VERSION-dev .
+    - docker push $IMAGE_NAME:$VERSION-dev
+    - docker rmi $IMAGE_NAME:$VERSION-dev
+
+build_release:
+  stage: build
+  only:
+    - /^release\/.*$/
+  script:
+    - docker build --build-arg VERSION=$VERSION -t $IMAGE_NAME:$VERSION-release .
+    - docker push $IMAGE_NAME:$VERSION-release
+    - docker rmi $IMAGE_NAME:$VERSION-release

@@ -1,12 +1,12 @@
-FROM golang:1.14 as builder
-WORKDIR /go/src/github.com/fhmq/hmq
+FROM golang:1.15 as builder
+WORKDIR /go/src/github.com/ruixiaoedu/hiot
 COPY . .
-RUN CGO_ENABLED=0 go build -o hmq -a -ldflags '-extldflags "-static"' .
+ENV GOPROXY https://goproxy.cn,direct
+RUN go build -ldflags="-w -s" -o hiot ./cmd
 
-
-FROM alpine:3.8
+FROM debian:bullseye
 WORKDIR /
-COPY --from=builder /go/src/github.com/fhmq/hmq/hmq .
+COPY --from=builder /go/src/github.com/ruixiaoedu/hiot/hiot /hiot
 EXPOSE 1883
 
-CMD ["/hmq"]
+CMD ["/hiot"]
