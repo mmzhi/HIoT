@@ -27,3 +27,7 @@
 2、同步消息（与异步消息不同之处是前面增加rpc/{messageId}）
 设备订阅               rpc/{messageId}/usr/{productId}/{deviceId}/{topics...}
 设备发布               rpc/{messageId}/usr/{productId}/{deviceId}/{topics...}
+
+
+## 触发Topic（trigger）
+1、设备上下线状态       trg/{productId}/{deviceId}/mqtt/state

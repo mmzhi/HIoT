@@ -6,7 +6,6 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"math"
-	"time"
 )
 
 // IDevice 设备数据库接口
@@ -156,7 +155,7 @@ func (db *_device) Online(device *model.Device, ipaddress string) error {
 	}).Updates(map[string]interface{}{
 		"ip_address":  ipaddress,
 		"state":       model.OnlineState,
-		"online_time": time.Now(),
+		"online_time": device.OnlineTime,
 	}); tx.Error != nil {
 		return Error(tx.Error)
 	}
@@ -164,14 +163,11 @@ func (db *_device) Online(device *model.Device, ipaddress string) error {
 }
 
 // Offline 设备下线
-func (db *_device) Offline(device *model.Device) error {
-	device, err := db.Get(device.ProductId, device.DeviceId)
+func (db *_device) Offline(d *model.Device) error {
+	device, err := db.Get(d.ProductId, d.DeviceId)
 	if err != nil {
 		return nil
 	}
-
-	// 下线时间
-	offlineTime := time.Now()
 
 	// 设备类型为网关，先下线其关联的在线的子设备
 	if device.ProductType == model.GatewayType {
@@ -181,7 +177,7 @@ func (db *_device) Offline(device *model.Device) error {
 			"state":              model.OnlineState,
 		}).Updates(map[string]interface{}{
 			"state":        model.OfflineState,
-			"offline_time": offlineTime,
+			"offline_time": d.OfflineTime,
 		}); tx.Error != nil {
 			logger.Error("subdevice offline fail", zap.Error(tx.Error))
 		}
@@ -189,7 +185,7 @@ func (db *_device) Offline(device *model.Device) error {
 
 	// 下线时间
 	values := map[string]interface{}{
-		"offline_time": offlineTime,
+		"offline_time": d.OfflineTime,
 	}
 
 	// 假设设备没有被禁用，便将状态设置为下线

@@ -5,6 +5,7 @@ import (
 	"github.com/ruixiaoedu/hiot/logger"
 	"github.com/ruixiaoedu/hiot/model"
 	"go.uber.org/zap"
+	"time"
 )
 
 // subdeviceController 处理子设备相关消息业务
@@ -96,10 +97,24 @@ func (m *subdeviceController) login(message RequestMessage) ResponseMessage {
 		return nil // TODO 暂时不作处理
 	}
 
+	onlineTime := time.Now()
+	subdevice.OnlineTime = &onlineTime
+
 	if err := m.engine.DB().Device().Online(subdevice, *device.IpAddress); err != nil {
 		logger.Error("subdevice online fail", zap.Error(err))
 		return nil // TODO 暂时不作处理
 	}
+
+	// 发送桥接的通知
+	clientStatusTrigger := ClientStatusTrigger{
+		State:     model.OnlineState,
+		ProductId: subdevice.ProductId,
+		DeviceId:  subdevice.DeviceId,
+		Time:      onlineTime.String(),
+		ClientIp:  device.IpAddress,
+	}
+	bs, _ := json.Marshal(&clientStatusTrigger)
+	m.engine.Bridge().Push("trg/"+subdevice.ProductId+"/"+subdevice.DeviceId+"/mqtt/state", bs)
 
 	return NewQos0ResponseMessage(payload.Success(nil).Payload())
 }
@@ -132,10 +147,23 @@ func (m *subdeviceController) logout(message RequestMessage) ResponseMessage {
 		return nil // TODO 暂时不作处理
 	}
 
+	offlineTime := time.Now()
+	subdevice.OfflineTime = &offlineTime
+
 	if err := m.engine.DB().Device().Offline(subdevice); err != nil {
 		logger.Error("subdevice offline fail", zap.Error(err))
 		return nil // TODO 暂时不作处理
 	}
+
+	// 发送桥接的通知
+	clientStatusTrigger := ClientStatusTrigger{
+		State:     model.OfflineState,
+		ProductId: subdevice.ProductId,
+		DeviceId:  subdevice.DeviceId,
+		Time:      offlineTime.String(),
+	}
+	bs, _ := json.Marshal(&clientStatusTrigger)
+	m.engine.Bridge().Push("trg/"+subdevice.ProductId+"/"+subdevice.DeviceId+"/mqtt/state", bs)
 
 	return NewQos0ResponseMessage(payload.Success(nil).Payload())
 }
